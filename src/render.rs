@@ -50,7 +50,8 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
             let ray_direction = Vec3::new(screen_x, screen_y, -1.0).normalize();
 
             // Cast the ray and get the pixel color
-            let pixel_color = cast_ray(&Vec3::new(0.0, 0.0, 5.0), &ray_direction, &data.spheres);
+            let rotated_direction = data.camera.change_basis(&ray_direction);
+            let pixel_color = cast_ray(&data.camera.eye, &rotated_direction, &data.spheres);
 
             // Draw the pixel on screen with the returned color
             framebuffer.set_current_color(pixel_color);

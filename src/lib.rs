@@ -1,6 +1,8 @@
+use camera::Camera;
 use sphere::Sphere;
 
 pub mod bmp;
+pub mod camera;
 pub mod color;
 pub mod framebuffer;
 pub mod raytracer;
@@ -15,6 +17,9 @@ pub fn are_equal(first: f32, second: f32, eps: f32) -> bool {
 
 pub struct Model {
     pub spheres: Vec<Sphere>,
+    pub camera: Camera,
 }
 
-pub enum Message {}
+pub enum Message {
+    RotateCamera(f32, f32),
+}

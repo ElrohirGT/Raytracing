@@ -1,3 +1,4 @@
+use hornystein::camera::Camera;
 use hornystein::framebuffer;
 use hornystein::raytracer::Material;
 use hornystein::render::{init_render, render};
@@ -7,10 +8,11 @@ use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use mouse_rs::Mouse;
 use nalgebra_glm::Vec3;
 use std::collections::VecDeque;
+use std::f32::consts::PI;
 use std::time::{Duration, Instant};
 
 const PLAYER_SPEED: f32 = 3.0;
-const PLAYER_ROTATION_SPEED: f32 = 0.006;
+const PLAYER_ROTATION_SPEED: f32 = PI / 20.0;
 
 fn main() {
     let window_width = 1080;
@@ -61,18 +63,10 @@ fn main() {
             .get_keys_pressed(KeyRepeat::Yes)
             .into_iter()
             .filter_map(|key| match key {
-                // Key::W => {
-                //     let x_delta = PLAYER_SPEED * data.player.orientation.cos();
-                //     let y_delta = PLAYER_SPEED * data.player.orientation.sin();
-                //     Some(Message::Move(nalgebra_glm::Vec2::new(x_delta, y_delta)))
-                // }
-                // Key::S => {
-                //     let x_delta = PLAYER_SPEED * data.player.orientation.cos();
-                //     let y_delta = PLAYER_SPEED * data.player.orientation.sin();
-                //     Some(Message::Move(nalgebra_glm::Vec2::new(-x_delta, -y_delta)))
-                // }
-                // Key::A => Some(Message::Rotate(-PLAYER_ROTATION_SPEED * 10.0)),
-                // Key::D => Some(Message::Rotate(PLAYER_ROTATION_SPEED * 10.0)),
+                Key::A => Some(Message::RotateCamera(PLAYER_ROTATION_SPEED, 0.0)),
+                Key::D => Some(Message::RotateCamera(-PLAYER_ROTATION_SPEED, 0.0)),
+                Key::W => Some(Message::RotateCamera(0.0, PLAYER_ROTATION_SPEED)),
+                Key::S => Some(Message::RotateCamera(0.0, -PLAYER_ROTATION_SPEED)),
                 // Key::Space => match (mode_cooldown_timer, &data.status) {
                 //     (0, GameStatus::MainMenu) => {
                 //         mode_cooldown_timer = mode_cooldown;
@@ -237,9 +231,26 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         },
     ];
 
-    Model { spheres }
+    let camera = Camera {
+        eye: Vec3::new(0.0, 0.0, 5.0),
+        up: Vec3::new(0.0, 1.0, 0.0),
+        center: Vec3::new(0.0, 0.0, 0.0),
+    };
+
+    Model { spheres, camera }
 }
 
 fn update(data: Model, msg: Message) -> Model {
-    data
+    match msg {
+        Message::RotateCamera(delta_yaw, delta_pitch) => {
+            let Model {
+                spheres,
+                mut camera,
+            } = data;
+
+            camera.rotate_cam(delta_yaw, delta_pitch);
+
+            Model { spheres, camera }
+        }
+    }
 }
