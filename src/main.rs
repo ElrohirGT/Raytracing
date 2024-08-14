@@ -118,115 +118,18 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     // println!("Reading file name: {}", file_name);
 
     let spheres = vec![
-        // Face
         Sphere {
-            radius: 3.0,
             center: Vec3::new(0.0, 0.0, 0.0),
-            material: Material {
-                diffuse: 0xcbacd2.into(),
-            },
-        },
-        // Left eye
-        Sphere {
             radius: 1.0,
-            center: Vec3::new(-1.5, 1.5, 0.0),
             material: Material {
                 diffuse: 0xffffff.into(),
             },
         },
         Sphere {
-            radius: 0.8,
-            center: Vec3::new(-1.5, 1.5, 0.0),
-            material: Material {
-                diffuse: 0x672b8c.into(),
-            },
-        },
-        Sphere {
+            center: Vec3::new(1.0, 1.0, 0.0),
             radius: 0.5,
-            center: Vec3::new(-1.5, 1.5, 0.0),
             material: Material {
-                diffuse: 0x000000.into(),
-            },
-        },
-        Sphere {
-            radius: 0.05,
-            center: Vec3::new(-1.5, 1.5, 0.0),
-            material: Material {
-                diffuse: 0xffffff.into(),
-            },
-        },
-        Sphere {
-            radius: 0.15,
-            center: Vec3::new(-1.75, 1.75, 0.0),
-            material: Material {
-                diffuse: 0xffffff.into(),
-            },
-        },
-        // Right eye
-        Sphere {
-            radius: 1.0,
-            center: Vec3::new(1.5, 1.5, 0.0),
-            material: Material {
-                diffuse: 0xffffff.into(),
-            },
-        },
-        Sphere {
-            radius: 0.8,
-            center: Vec3::new(1.5, 1.5, 0.0),
-            material: Material {
-                diffuse: 0x672b8c.into(),
-            },
-        },
-        Sphere {
-            radius: 0.5,
-            center: Vec3::new(1.5, 1.5, 0.0),
-            material: Material {
-                diffuse: 0x000000.into(),
-            },
-        },
-        Sphere {
-            radius: 0.05,
-            center: Vec3::new(1.5, 1.5, 0.0),
-            material: Material {
-                diffuse: 0xffffff.into(),
-            },
-        },
-        Sphere {
-            radius: 0.15,
-            center: Vec3::new(1.75, 1.75, 0.0),
-            material: Material {
-                diffuse: 0xffffff.into(),
-            },
-        },
-        // Mouth
-        Sphere {
-            radius: 1.0,
-            center: Vec3::new(0.0, -2.0, 0.0),
-            material: Material {
-                diffuse: 0xdf2080.into(),
-            },
-        },
-        Sphere {
-            radius: 0.5,
-            center: Vec3::new(0.0, -2.6, 0.0),
-            material: Material {
-                diffuse: 0xfe6d01.into(),
-            },
-        },
-        // Right ear
-        Sphere {
-            radius: 1.0,
-            center: Vec3::new(3.4, 3.4, 0.0),
-            material: Material {
-                diffuse: 0xcbacd2.into(),
-            },
-        },
-        // Left ear
-        Sphere {
-            radius: 1.0,
-            center: Vec3::new(-3.4, 3.4, 0.0),
-            material: Material {
-                diffuse: 0xcbacd2.into(),
+                diffuse: 0xffff00.into(),
             },
         },
     ];
