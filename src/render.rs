@@ -11,12 +11,12 @@ pub fn init_render(framebuffer: &mut Framebuffer, data: &Model) {
 
 pub fn cast_ray(ray_origin: &Vec3, ray_direction: &Vec3, objects: &[impl Traceable]) -> Color {
     let mut intersect = None;
-    let mut zbuffer = f32::NEG_INFINITY;
+    let mut zbuffer = f32::INFINITY;
 
     for object in objects {
         let potential_intersect = object.ray_intersect(ray_origin, ray_direction);
         if let Some(actual_intersect) = potential_intersect {
-            if actual_intersect.distance > zbuffer {
+            if actual_intersect.distance < zbuffer {
                 zbuffer = actual_intersect.distance;
                 intersect = Some(actual_intersect);
             }
