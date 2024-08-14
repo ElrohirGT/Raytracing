@@ -1,12 +1,12 @@
-use hornystein::camera::Camera;
-use hornystein::framebuffer;
-use hornystein::raytracer::Material;
-use hornystein::render::{init_render, render};
-use hornystein::sphere::Sphere;
-use hornystein::{Message, Model};
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use mouse_rs::Mouse;
 use nalgebra_glm::Vec3;
+use raytracer::camera::Camera;
+use raytracer::framebuffer;
+use raytracer::raytracer::Material;
+use raytracer::render::{init_render, render};
+use raytracer::sphere::Sphere;
+use raytracer::{Message, Model};
 use std::collections::VecDeque;
 use std::f32::consts::PI;
 use std::time::{Duration, Instant};

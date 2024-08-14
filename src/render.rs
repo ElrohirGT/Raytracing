@@ -2,6 +2,7 @@ use glm::Vec3;
 
 use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
+use rayon::prelude::*;
 
 use crate::raytracer::Traceable;
 
@@ -9,19 +10,56 @@ pub fn init_render(framebuffer: &mut Framebuffer, data: &Model) {
     render(framebuffer, data);
 }
 
-pub fn cast_ray(ray_origin: &Vec3, ray_direction: &Vec3, objects: &[impl Traceable]) -> Color {
-    let mut intersect = None;
-    let mut zbuffer = f32::INFINITY;
+pub fn cast_ray<T: Traceable + Send>(
+    ray_origin: &Vec3,
+    ray_direction: &Vec3,
+    objects: &[T],
+) -> Color {
+    // let (intersect, _) = objects
+    //     .par_iter()
+    //     .map(|object| object.ray_intersect(ray_origin, ray_direction))
+    //     .fold(
+    //         || (None, f32::INFINITY),
+    //         |mut accumulator, intersection| {
+    //             if let Some(intersect) = intersection {
+    //                 if intersect.distance < accumulator.1 {
+    //                     let distance = intersect.distance;
+    //                     accumulator = (Some(intersect), distance);
+    //                 }
+    //             }
+    //
+    //             accumulator
+    //         },
+    //     )
+    //     .reduce(
+    //         || (None, f32::INFINITY),
+    //         |mut accum, intersection| {
+    //             if let Some(intersect) = intersection.0 {
+    //                 if intersect.distance < accum.1 {
+    //                     let distance = intersect.distance;
+    //                     accum = (Some(intersect), distance);
+    //                 }
+    //             }
+    //
+    //             accum
+    //         },
+    //     );
 
-    for object in objects {
-        let potential_intersect = object.ray_intersect(ray_origin, ray_direction);
-        if let Some(actual_intersect) = potential_intersect {
-            if actual_intersect.distance < zbuffer {
-                zbuffer = actual_intersect.distance;
-                intersect = Some(actual_intersect);
+    let (intersect, _) = objects
+        .iter()
+        .map(|object| object.ray_intersect(ray_origin, ray_direction))
+        .fold((None, f32::INFINITY), |accum, intersection| {
+            if let Some(intersect) = intersection {
+                if intersect.distance < accum.1 {
+                    let distance = intersect.distance;
+                    (Some(intersect), distance)
+                } else {
+                    accum
+                }
+            } else {
+                accum
             }
-        }
-    }
+        });
 
     if let Some(intersect) = intersect {
         intersect.material.diffuse
