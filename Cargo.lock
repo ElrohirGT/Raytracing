@@ -670,6 +670,7 @@ dependencies = [
  "mouse-rs",
  "nalgebra-glm",
  "rand",
+ "rayon",
  "rodio",
 ]
 
