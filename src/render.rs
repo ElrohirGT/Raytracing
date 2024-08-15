@@ -18,9 +18,9 @@ pub fn cast_ray<T: Traceable + Send>(
         .iter()
         .flat_map(|object| object.ray_intersect(ray_origin, ray_direction))
         .fold((None, f32::INFINITY), |accum, intersection| {
-            if intersect.distance < accum.1 {
-                let distance = intersect.distance;
-                (Some(intersect), distance)
+            if intersection.distance < accum.1 {
+                let distance = intersection.distance;
+                (Some(intersection), distance)
             } else {
                 accum
             }

@@ -126,7 +126,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
             },
         },
         Sphere {
-            center: Vec3::new(1.0, 1.0, 0.0),
+            center: Vec3::new(2.5, 1.0, 0.0),
             radius: 0.5,
             material: Material {
                 diffuse: 0xffff00.into(),
