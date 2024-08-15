@@ -14,47 +14,13 @@ pub fn cast_ray<T: Traceable + Send>(
     ray_direction: &Vec3,
     objects: &[T],
 ) -> Color {
-    // let (intersect, _) = objects
-    //     .par_iter()
-    //     .map(|object| object.ray_intersect(ray_origin, ray_direction))
-    //     .fold(
-    //         || (None, f32::INFINITY),
-    //         |mut accumulator, intersection| {
-    //             if let Some(intersect) = intersection {
-    //                 if intersect.distance < accumulator.1 {
-    //                     let distance = intersect.distance;
-    //                     accumulator = (Some(intersect), distance);
-    //                 }
-    //             }
-    //
-    //             accumulator
-    //         },
-    //     )
-    //     .reduce(
-    //         || (None, f32::INFINITY),
-    //         |mut accum, intersection| {
-    //             if let Some(intersect) = intersection.0 {
-    //                 if intersect.distance < accum.1 {
-    //                     let distance = intersect.distance;
-    //                     accum = (Some(intersect), distance);
-    //                 }
-    //             }
-    //
-    //             accum
-    //         },
-    //     );
-
     let (intersect, _) = objects
         .iter()
-        .map(|object| object.ray_intersect(ray_origin, ray_direction))
+        .flat_map(|object| object.ray_intersect(ray_origin, ray_direction))
         .fold((None, f32::INFINITY), |accum, intersection| {
-            if let Some(intersect) = intersection {
-                if intersect.distance < accum.1 {
-                    let distance = intersect.distance;
-                    (Some(intersect), distance)
-                } else {
-                    accum
-                }
+            if intersect.distance < accum.1 {
+                let distance = intersect.distance;
+                (Some(intersect), distance)
             } else {
                 accum
             }
