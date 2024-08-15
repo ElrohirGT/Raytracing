@@ -2,7 +2,6 @@ use glm::Vec3;
 
 use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
-use rayon::prelude::*;
 
 use crate::raytracer::Traceable;
 
