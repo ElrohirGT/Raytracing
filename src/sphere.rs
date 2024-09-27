@@ -20,11 +20,17 @@ impl Traceable for Sphere {
 
         if discriminant > 0.0 {
             let t = (-b - discriminant.sqrt()) / (2.0 * a);
+
             if t > 0.0 {
                 let distance = t;
+                let point = ray_origin + ray_direction * t;
+                let normal = (point - self.center).normalize();
+
                 Some(Intersect {
                     distance,
                     material: self.material,
+                    point,
+                    normal,
                 })
             } else {
                 None

@@ -42,9 +42,9 @@ pub enum GetColorErrors {
 
 impl Framebuffer {
     pub fn new(width: usize, height: usize) -> Self {
-        let background_color = Color::black();
+        let background_color = Color::default();
         let current_color = Color::white();
-        let empty_buffer = create_filled_buffer(&width, &height, &Color::black());
+        let empty_buffer = create_filled_buffer(&width, &height, &Color::default());
         let buffer = empty_buffer.clone();
 
         Framebuffer {

@@ -1,5 +1,6 @@
 use glm::Vec3;
 
+use crate::light::{self, Light};
 use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
 
@@ -13,6 +14,7 @@ pub fn cast_ray<T: Traceable + Send>(
     ray_origin: &Vec3,
     ray_direction: &Vec3,
     objects: &[T],
+    lights: &[Light],
 ) -> Color {
     let (intersect, _) = objects
         .iter()
@@ -27,9 +29,14 @@ pub fn cast_ray<T: Traceable + Send>(
         });
 
     if let Some(intersect) = intersect {
-        intersect.material.diffuse
+        lights.iter().fold(Color::default(), |previous, current| {
+            let light_dir = (current.position - intersect.point).normalize();
+            let diffuse_intensity = intersect.normal.dot(&light_dir);
+            let diffuse = intersect.material.diffuse * diffuse_intensity * current.intensity;
+            previous + diffuse
+        })
     } else {
-        0x000000.into()
+        Color::default().into()
     }
 }
 
@@ -54,7 +61,12 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
 
             // Cast the ray and get the pixel color
             let rotated_direction = data.camera.change_basis(&ray_direction);
-            let pixel_color = cast_ray(&data.camera.eye, &rotated_direction, &data.spheres);
+            let pixel_color = cast_ray(
+                &data.camera.eye,
+                &rotated_direction,
+                &data.spheres,
+                &data.lights,
+            );
 
             // Draw the pixel on screen with the returned color
             framebuffer.set_current_color(pixel_color);

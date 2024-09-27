@@ -2,7 +2,9 @@ use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use mouse_rs::Mouse;
 use nalgebra_glm::Vec3;
 use raytracer::camera::Camera;
+use raytracer::color::Color;
 use raytracer::framebuffer;
+use raytracer::light::Light;
 use raytracer::raytracer::Material;
 use raytracer::render::{init_render, render};
 use raytracer::sphere::Sphere;
@@ -29,8 +31,9 @@ fn main() {
         ..WindowOptions::default()
     };
 
+    let title_prefix = "TortrixCraft RTX - ON";
     let mut window =
-        Window::new("Hornystein", window_width, window_height, window_options).unwrap();
+        Window::new(&title_prefix, window_width, window_height, window_options).unwrap();
     window.set_key_repeat_delay(0.01);
     window.set_cursor_visibility(true);
     let mouse = Mouse::new();
@@ -104,7 +107,7 @@ fn main() {
         let avg_millis: f32 = last_recorded_frames.iter().map(|&u| u as f32).sum::<f32>()
             / last_recorded_frames_max_count as f32;
         let avg_frames = 1000.0 / avg_millis;
-        window.set_title(format!("Hornystein - {:.2} fps", avg_frames).as_ref());
+        window.set_title(format!("{} - {:.2} fps", title_prefix, avg_frames).as_ref());
         std::thread::sleep(frame_delay);
     }
 }
@@ -134,13 +137,23 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         },
     ];
 
+    let lights = vec![Light {
+        position: Vec3::new(2.0, 2.0, 2.0),
+        color: Color::white(),
+        intensity: 1.0,
+    }];
+
     let camera = Camera {
         eye: Vec3::new(0.0, 0.0, 5.0),
         up: Vec3::new(0.0, 1.0, 0.0),
         center: Vec3::new(0.0, 0.0, 0.0),
     };
 
-    Model { spheres, camera }
+    Model {
+        spheres,
+        camera,
+        lights,
+    }
 }
 
 fn update(data: Model, msg: Message) -> Model {
@@ -149,11 +162,16 @@ fn update(data: Model, msg: Message) -> Model {
             let Model {
                 spheres,
                 mut camera,
+                lights,
             } = data;
 
             camera.rotate_cam(delta_yaw, delta_pitch);
 
-            Model { spheres, camera }
+            Model {
+                spheres,
+                camera,
+                lights,
+            }
         }
     }
 }

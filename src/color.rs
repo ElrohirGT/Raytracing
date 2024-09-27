@@ -7,15 +7,19 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
+    pub const fn new(r: u8, g: u8, b: u8) -> Self {
         Color { r, g, b }
     }
 
-    pub fn black() -> Self {
+    pub const fn black() -> Self {
         Color::new(0, 0, 0)
     }
-    pub fn white() -> Self {
+    pub const fn white() -> Self {
         Color::new(u8::MAX, u8::MAX, u8::MAX)
+    }
+
+    pub const fn default() -> Self {
+        Self::black()
     }
 
     pub fn change_brightness_by(&self, factor: f32) -> Self {
