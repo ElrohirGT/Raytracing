@@ -120,20 +120,30 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     // let file_name = args.next().expect("No maze file name received!");
     // println!("Reading file name: {}", file_name);
 
+    let rubber = Material {
+        diffuse: 0xffffff.into(),
+        specular: 1.0,
+        albedo: 0.9,
+        reflectivity: 0.1,
+    };
+
+    let ivory = Material {
+        diffuse: 0xffff00.into(),
+        specular: 50.0,
+        albedo: 0.6,
+        reflectivity: 0.3,
+    };
+
     let spheres = vec![
         Sphere {
             center: Vec3::new(0.0, 0.0, 0.0),
             radius: 1.0,
-            material: Material {
-                diffuse: 0xffffff.into(),
-            },
+            material: rubber,
         },
         Sphere {
             center: Vec3::new(2.5, 1.0, 0.0),
             radius: 0.5,
-            material: Material {
-                diffuse: 0xffff00.into(),
-            },
+            material: ivory,
         },
     ];
 

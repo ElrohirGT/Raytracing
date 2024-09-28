@@ -10,6 +10,10 @@ pub fn init_render(framebuffer: &mut Framebuffer, data: &Model) {
     render(framebuffer, data);
 }
 
+fn reflect(incident: &Vec3, normal: &Vec3) -> Vec3 {
+    incident - 2.0 * incident.dot(normal) * normal
+}
+
 pub fn cast_ray<T: Traceable + Send>(
     ray_origin: &Vec3,
     ray_direction: &Vec3,
@@ -29,14 +33,33 @@ pub fn cast_ray<T: Traceable + Send>(
         });
 
     if let Some(intersect) = intersect {
-        lights.iter().fold(Color::default(), |previous, current| {
-            let light_dir = (current.position - intersect.point).normalize();
-            let diffuse_intensity = intersect.normal.dot(&light_dir);
-            let diffuse = intersect.material.diffuse * diffuse_intensity * current.intensity;
-            previous + diffuse
-        })
+        lights
+            .iter()
+            .fold(Color::default(), |accumulator_color, current_light| {
+                let light_dir = (current_light.position - intersect.point).normalize();
+                let view_dir = (ray_origin - intersect.point).normalize();
+                let reflect_dir = reflect(&-light_dir, &intersect.normal);
+
+                let diffuse_intensity = intersect.normal.dot(&light_dir).clamp(0.0, 1.0);
+                let diffuse = intersect.material.diffuse
+                    * intersect.material.albedo
+                    * diffuse_intensity
+                    * current_light.intensity;
+
+                let specular_intensity = view_dir
+                    .dot(&reflect_dir)
+                    .max(0.0)
+                    .powf(intersect.material.specular);
+                let specular = current_light.color
+                    * intersect.material.reflectivity
+                    * specular_intensity
+                    * current_light.intensity;
+
+                accumulator_color + diffuse + specular
+            })
     } else {
-        Color::default().into()
+        // Sky color...
+        0x181818.into()
     }
 }
 
