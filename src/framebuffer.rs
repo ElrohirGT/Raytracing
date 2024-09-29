@@ -1,4 +1,4 @@
-use nalgebra_glm::Vec3;
+use nalgebra_glm::Vec2;
 
 use crate::{are_equal, bmp::write_bmp_file, color::Color};
 
@@ -76,7 +76,7 @@ impl Framebuffer {
     /// The paint origin is located on the top left corner of the window.
     ///
     /// The color used is the one provided by `current_color`.
-    pub fn paint_point(&mut self, point: glm::Vec3) -> Result<(), PaintPointErrors> {
+    pub fn paint_point(&mut self, point: glm::Vec2) -> Result<(), PaintPointErrors> {
         let Framebuffer {
             width,
             height,
@@ -109,7 +109,7 @@ impl Framebuffer {
     }
 
     /// Paints a line that extends from `p1` to `p2` with the color of `current_color`.
-    pub fn paint_line(&mut self, p1: glm::Vec3, p2: glm::Vec3) -> Result<(), PaintPointErrors> {
+    pub fn paint_line(&mut self, p1: glm::Vec2, p2: glm::Vec2) -> Result<(), PaintPointErrors> {
         let x0 = p1.x;
         let y0 = p1.y;
 
@@ -128,7 +128,7 @@ impl Framebuffer {
         let mut current_y = y0;
 
         loop {
-            self.paint_point(Vec3::new(current_x, current_y, 0.0))?;
+            self.paint_point(Vec2::new(current_x, current_y))?;
 
             let reached_x1 = are_equal(current_x, x1, f32::EPSILON);
             let reached_y1 = are_equal(current_y, y1, f32::EPSILON);
@@ -154,7 +154,7 @@ impl Framebuffer {
     }
 
     /// Paints the given polygon to the screen
-    pub fn paint_polygon(&mut self, mut points: Vec<glm::Vec3>) -> Result<(), PaintPointErrors> {
+    pub fn paint_polygon(&mut self, mut points: Vec<glm::Vec2>) -> Result<(), PaintPointErrors> {
         match points.len() {
             1 => self.paint_point(points.remove(0)),
             _ => {
