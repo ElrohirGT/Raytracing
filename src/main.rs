@@ -91,7 +91,11 @@ fn main() {
         for msg in messages {
             data = update(data, msg);
         }
-        render(&mut framebuffer, &data);
+
+        if data.camera.has_changed() {
+            render(&mut framebuffer, &data);
+        }
+        data.camera.reset_change();
 
         // Update the window with the framebuffer contents
         window
@@ -155,11 +159,11 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         intensity: 1.0,
     }];
 
-    let camera = Camera {
-        eye: Vec3::new(0.0, 0.0, 5.0),
-        up: Vec3::new(0.0, 1.0, 0.0),
-        center: Vec3::new(0.0, 0.0, 0.0),
-    };
+    let camera = Camera::new(
+        Vec3::new(0.0, 0.0, 5.0),
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+    );
 
     Model {
         spheres,
@@ -178,6 +182,21 @@ fn update(data: Model, msg: Message) -> Model {
             } = data;
 
             camera.rotate_cam(delta_yaw, delta_pitch);
+
+            Model {
+                spheres,
+                camera,
+                lights,
+            }
+        }
+        Message::MoveCamera(delta_vel) => {
+            let Model {
+                spheres,
+                mut camera,
+                lights,
+            } = data;
+
+            camera.advance_cam(delta_vel);
 
             Model {
                 spheres,

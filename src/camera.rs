@@ -1,8 +1,11 @@
 use std::f32::consts::PI;
 
-use glm::{cos, Vec3};
+use glm::Vec3;
 
 pub struct Camera {
+    /// Determines whether or not the camera has changed.
+    has_changed: bool,
+
     /// Camera position in the world space.
     pub eye: Vec3,
 
@@ -14,6 +17,14 @@ pub struct Camera {
 }
 
 impl Camera {
+    pub fn new(eye: Vec3, center: Vec3, up: Vec3) -> Self {
+        Camera {
+            eye,
+            center,
+            up,
+            has_changed: false,
+        }
+    }
     pub fn change_basis(&self, vector: &Vec3) -> Vec3 {
         let forward = (self.center - self.eye).normalize();
         let right = forward.cross(&self.up).normalize();
@@ -24,11 +35,26 @@ impl Camera {
         changed_based.normalize()
     }
 
+    /// Advances the Camera by a given delta.
+    pub fn advance_cam(&mut self, delta: f32) {
+        self.has_changed = true;
+        let forward_dir = (self.center - self.eye).normalize();
+        self.eye += forward_dir * delta;
+    }
+
+    /// Zooms in and zooms out the camera by a given delta.
+    pub fn zoom(&mut self, delta: f32) {
+        self.has_changed = true;
+        let forward_dir = (self.center - self.eye).normalize();
+        self.eye += forward_dir * delta;
+    }
+
     /// Rotates the Camera by a given delta_yaw and pitch
     ///
     /// * `delta_yaw`: Rotates cam from left to right.
     /// * `delta_pitch`: Rotates cam up and down.
     pub fn rotate_cam(&mut self, delta_yaw: f32, delta_pitch: f32) {
+        self.has_changed = true;
         let radius_vector = self.eye - self.center;
         let radius = radius_vector.magnitude();
 
@@ -52,5 +78,13 @@ impl Camera {
             );
 
         self.eye = new_eye;
+    }
+
+    pub fn has_changed(&self) -> bool {
+        self.has_changed
+    }
+
+    pub fn reset_change(&mut self) {
+        self.has_changed = false;
     }
 }
