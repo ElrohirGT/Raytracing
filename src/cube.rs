@@ -1,12 +1,8 @@
 use core::f32;
 
-use glm::{Vec2, Vec3};
-use rand::Rng;
+use glm::Vec3;
 
-use crate::{
-    are_equal,
-    raytracer::{Intersect, Material, Traceable},
-};
+use crate::raytracer::{Intersect, Material, Traceable};
 
 #[derive(Debug)]
 pub struct Cube {
@@ -14,7 +10,6 @@ pub struct Cube {
     pub center: Vec3,
     pub size: f32,
     pub material: Material,
-    face_normals: Vec<Vec3>,
     bounds: BoxBounds,
 }
 
@@ -33,21 +28,6 @@ impl Cube {
     /// * `material`: The Material of which is the cube made of.
     /// * `up`: In what direction is up for the cube?
     pub fn new(id: u32, center: Vec3, size: f32, material: Material, up: Vec3) -> Self {
-        // The y axis affects forwards and backwards movement.
-        let original_forwards = Vec3::new(0.0, 1.0, 0.0);
-
-        let right = original_forwards.cross(&up).normalize();
-        let backwards = right.cross(&up).normalize();
-
-        let face_normals = vec![
-            up,         // up
-            -up,        // down
-            right,      // right
-            -right,     // left
-            -backwards, // forwards
-            backwards,  // backwards
-        ];
-
         let bounds = Cube::compute_bounds(&center, &up, &size);
 
         Cube {
@@ -56,7 +36,6 @@ impl Cube {
             size,
             bounds,
             material,
-            face_normals,
         }
     }
 
