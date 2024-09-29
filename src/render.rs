@@ -14,7 +14,11 @@ fn reflect(incident: &Vec3, normal: &Vec3) -> Vec3 {
     incident - 2.0 * incident.dot(normal) * normal
 }
 
-fn cast_shadow<T: Traceable + Send>(intersect: &Intersect, light: &Light, objects: &[T]) -> f32 {
+fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
+    intersect: &Intersect,
+    light: &Light,
+    objects: ObIterable,
+) -> f32 {
     let light_dir = (light.position - intersect.point).normalize();
     let shadow_ray_origin = intersect.point;
     let mut shadow_intensity = 0.0;
@@ -33,32 +37,40 @@ fn cast_shadow<T: Traceable + Send>(intersect: &Intersect, light: &Light, object
     shadow_intensity
 }
 
-pub fn cast_ray<T: Traceable + Send>(
+pub fn cast_ray<T: Traceable + Eq>(
     ray_origin: &Vec3,
     ray_direction: &Vec3,
     objects: &[T],
     lights: &[Light],
 ) -> Color {
-    let (intersect, _) = objects
+    let (intersect, _, impact_object) = objects
         .iter()
-        .flat_map(|object| object.ray_intersect(ray_origin, ray_direction))
-        .fold((None, f32::INFINITY), |accum, intersection| {
-            if intersection.distance < accum.1 {
-                let distance = intersection.distance;
-                (Some(intersection), distance)
+        .flat_map(|object| {
+            object
+                .ray_intersect(ray_origin, ray_direction)
+                .map(|inter| (inter, object))
+        })
+        .fold((None, f32::INFINITY, None), |accum, intersection| {
+            if intersection.0.distance < accum.1 {
+                let distance = intersection.0.distance;
+                (Some(intersection.0), distance, Some(intersection.1))
             } else {
                 accum
             }
         });
 
-    if let Some(intersect) = intersect {
+    if let (Some(intersect), Some(impact_object)) = (intersect, impact_object) {
         lights
             .iter()
             .fold(Color::default(), |accumulator_color, current_light| {
                 let light_dir = (current_light.position - intersect.point).normalize();
                 let view_dir = (ray_origin - intersect.point).normalize();
                 let reflect_dir = reflect(&-light_dir, &intersect.normal).normalize();
-                let shadow_intensity = cast_shadow(&intersect, current_light, &objects);
+                let shadow_intensity = cast_shadow(
+                    &intersect,
+                    current_light,
+                    objects.iter().filter(|o| o != &impact_object),
+                );
                 let light_intensity = current_light.intensity * (1.0 - shadow_intensity);
 
                 let diffuse_intensity = intersect.normal.dot(&light_dir).clamp(0.0, 1.0);

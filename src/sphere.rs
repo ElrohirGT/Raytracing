@@ -2,11 +2,20 @@ use glm::Vec3;
 
 use crate::raytracer::{Intersect, Material, Traceable};
 
+#[derive(Debug)]
 pub struct Sphere {
+    pub id: u32,
     pub center: Vec3,
     pub radius: f32,
     pub material: Material,
 }
+
+impl PartialEq for Sphere {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+impl Eq for Sphere {}
 
 impl Traceable for Sphere {
     fn ray_intersect(&self, ray_origin: &Vec3, ray_direction: &Vec3) -> Option<Intersect> {

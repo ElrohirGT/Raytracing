@@ -136,11 +136,13 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     let spheres = vec![
         Sphere {
+            id: 1,
             center: Vec3::new(0.0, 0.0, 0.0),
             radius: 1.0,
             material: rubber,
         },
         Sphere {
+            id: 2,
             center: Vec3::new(1.0, 3.0, 1.0),
             radius: 0.3,
             material: ivory,
