@@ -4,7 +4,7 @@ use crate::light::{self, Light};
 use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
 
-use crate::raytracer::Traceable;
+use crate::raytracer::{Intersect, Traceable};
 
 pub fn init_render(framebuffer: &mut Framebuffer, data: &Model) {
     render(framebuffer, data);
@@ -12,6 +12,22 @@ pub fn init_render(framebuffer: &mut Framebuffer, data: &Model) {
 
 fn reflect(incident: &Vec3, normal: &Vec3) -> Vec3 {
     incident - 2.0 * incident.dot(normal) * normal
+}
+
+fn cast_shadow<T: Traceable + Send>(intersect: &Intersect, light: &Light, objects: &[T]) -> f32 {
+    let light_dir = (light.position - intersect.point).normalize();
+    let shadow_ray_origin = intersect.point;
+    let mut shadow_intensity = 0.0;
+
+    for object in objects {
+        let shadow_intersect = object.ray_intersect(&shadow_ray_origin, &light_dir);
+        if let Some(_) = shadow_intersect {
+            shadow_intensity = 1.0;
+            break;
+        }
+    }
+
+    shadow_intensity
 }
 
 pub fn cast_ray<T: Traceable + Send>(
@@ -38,22 +54,24 @@ pub fn cast_ray<T: Traceable + Send>(
             .fold(Color::default(), |accumulator_color, current_light| {
                 let light_dir = (current_light.position - intersect.point).normalize();
                 let view_dir = (ray_origin - intersect.point).normalize();
-                let reflect_dir = reflect(&-light_dir, &intersect.normal);
+                let reflect_dir = reflect(&-light_dir, &intersect.normal).normalize();
+                let shadow_intensity = cast_shadow(&intersect, current_light, &objects);
+                let light_intensity = current_light.intensity * (1.0 - shadow_intensity);
 
                 let diffuse_intensity = intersect.normal.dot(&light_dir).clamp(0.0, 1.0);
                 let diffuse = intersect.material.diffuse
                     * intersect.material.albedo
                     * diffuse_intensity
-                    * current_light.intensity;
+                    * light_intensity;
 
                 let specular_intensity = view_dir
                     .dot(&reflect_dir)
-                    .max(0.0)
+                    .clamp(0.0, 1.0)
                     .powf(intersect.material.specular);
                 let specular = current_light.color
                     * intersect.material.reflectivity
                     * specular_intensity
-                    * current_light.intensity;
+                    * light_intensity;
 
                 accumulator_color + diffuse + specular
             })
