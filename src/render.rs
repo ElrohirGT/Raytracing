@@ -180,7 +180,7 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                 cast_ray(
                     &data.camera.eye,
                     &rotated_direction,
-                    &data.spheres,
+                    &data.cubes,
                     &data.lights,
                     0,
                 )

@@ -31,6 +31,7 @@ impl Material {
     }
 }
 
+#[derive(Debug)]
 pub struct Intersect {
     pub distance: f32,
     pub point: Vec3,

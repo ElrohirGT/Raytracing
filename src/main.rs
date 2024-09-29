@@ -3,6 +3,7 @@ use mouse_rs::Mouse;
 use nalgebra_glm::Vec3;
 use raytracer::camera::Camera;
 use raytracer::color::Color;
+use raytracer::cube::Cube;
 use raytracer::framebuffer;
 use raytracer::light::Light;
 use raytracer::raytracer::Material;
@@ -146,20 +147,31 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         refractive_index: 1.0,
     };
 
-    let spheres = vec![
-        Sphere {
-            id: 1,
-            center: Vec3::new(0.0, 0.0, 0.0),
-            radius: 1.0,
-            material: rubber,
-        },
-        Sphere {
-            id: 2,
-            center: Vec3::new(1.0, 3.0, 1.0),
-            radius: 0.3,
-            material: ivory,
-        },
-    ];
+    // let spheres = vec![
+    //     Sphere {
+    //         id: 1,
+    //         center: Vec3::new(0.0, 0.0, 0.0),
+    //         radius: 1.0,
+    //         material: rubber,
+    //     },
+    //     Sphere {
+    //         id: 2,
+    //         center: Vec3::new(1.0, 3.0, 1.0),
+    //         radius: 0.3,
+    //         material: ivory,
+    //     },
+    // ];
+    let spheres = vec![];
+
+    let cubes = vec![Cube::new(
+        1,
+        Vec3::new(0.0, 0.0, 0.0),
+        2.0,
+        ivory,
+        Vec3::new(0.0, 0.0, 1.0).normalize(),
+    )];
+
+    println!("Cubes created: {:#?}", cubes);
 
     let lights = vec![Light {
         position: Vec3::new(2.0, 5.0, 2.0),
@@ -175,6 +187,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     Model {
         spheres,
+        cubes,
         camera,
         lights,
     }
@@ -183,34 +196,18 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 fn update(data: Model, msg: Message) -> Model {
     match msg {
         Message::RotateCamera(delta_yaw, delta_pitch) => {
-            let Model {
-                spheres,
-                mut camera,
-                lights,
-            } = data;
+            let Model { mut camera, .. } = data;
 
             camera.rotate_cam(delta_yaw, delta_pitch);
 
-            Model {
-                spheres,
-                camera,
-                lights,
-            }
+            Model { camera, ..data }
         }
         Message::ZoomCamera(delta_vel) => {
-            let Model {
-                spheres,
-                mut camera,
-                lights,
-            } = data;
+            let Model { mut camera, .. } = data;
 
             camera.advance_cam(delta_vel);
 
-            Model {
-                spheres,
-                camera,
-                lights,
-            }
+            Model { camera, ..data }
         }
     }
 }

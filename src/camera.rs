@@ -17,6 +17,11 @@ pub struct Camera {
 }
 
 impl Camera {
+    /// Creates a new Camera with the given parameters.
+    ///
+    /// * `eye`: Camera position in the world space.
+    /// * `center`: Point the camera is looking at.
+    /// * `up`: What's the up vector of the camera.
     pub fn new(eye: Vec3, center: Vec3, up: Vec3) -> Self {
         Camera {
             eye,
