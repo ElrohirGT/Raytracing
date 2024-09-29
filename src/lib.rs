@@ -10,6 +10,7 @@ pub mod light;
 pub mod raytracer;
 pub mod render;
 pub mod sphere;
+pub mod texture;
 
 extern crate nalgebra_glm as glm;
 
