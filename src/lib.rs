@@ -25,5 +25,5 @@ pub struct Model {
 
 pub enum Message {
     RotateCamera(f32, f32),
-    MoveCamera(f32),
+    ZoomCamera(f32),
 }

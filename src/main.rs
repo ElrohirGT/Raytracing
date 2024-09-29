@@ -13,7 +13,7 @@ use std::collections::VecDeque;
 use std::f32::consts::PI;
 use std::time::{Duration, Instant};
 
-const PLAYER_SPEED: f32 = 3.0;
+const PLAYER_SPEED: f32 = 0.1;
 const PLAYER_ROTATION_SPEED: f32 = PI / 20.0;
 
 fn main() {
@@ -66,10 +66,14 @@ fn main() {
             .get_keys_pressed(KeyRepeat::Yes)
             .into_iter()
             .filter_map(|key| match key {
-                Key::A => Some(Message::RotateCamera(PLAYER_ROTATION_SPEED, 0.0)),
-                Key::D => Some(Message::RotateCamera(-PLAYER_ROTATION_SPEED, 0.0)),
-                Key::W => Some(Message::RotateCamera(0.0, PLAYER_ROTATION_SPEED)),
-                Key::S => Some(Message::RotateCamera(0.0, -PLAYER_ROTATION_SPEED)),
+                Key::Left => Some(Message::RotateCamera(PLAYER_ROTATION_SPEED, 0.0)),
+                Key::Right => Some(Message::RotateCamera(-PLAYER_ROTATION_SPEED, 0.0)),
+                Key::Up => Some(Message::RotateCamera(0.0, PLAYER_ROTATION_SPEED)),
+                Key::Down => Some(Message::RotateCamera(0.0, -PLAYER_ROTATION_SPEED)),
+
+                Key::W => Some(Message::ZoomCamera(PLAYER_SPEED)),
+                Key::S => Some(Message::ZoomCamera(-PLAYER_SPEED)),
+
                 // Key::Space => match (mode_cooldown_timer, &data.status) {
                 //     (0, GameStatus::MainMenu) => {
                 //         mode_cooldown_timer = mode_cooldown;
@@ -189,7 +193,7 @@ fn update(data: Model, msg: Message) -> Model {
                 lights,
             }
         }
-        Message::MoveCamera(delta_vel) => {
+        Message::ZoomCamera(delta_vel) => {
             let Model {
                 spheres,
                 mut camera,

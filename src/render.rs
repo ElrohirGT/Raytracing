@@ -1,6 +1,6 @@
 use glm::Vec3;
 
-use crate::light::{self, Light};
+use crate::light::Light;
 use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
 
@@ -42,7 +42,13 @@ pub fn cast_ray<T: Traceable + Eq>(
     ray_direction: &Vec3,
     objects: &[T],
     lights: &[Light],
+    depth: u32,
 ) -> Color {
+    let skybox_color = 0x181818.into();
+    if depth > 3 {
+        return skybox_color;
+    }
+
     let (intersect, _, impact_object) = objects
         .iter()
         .flat_map(|object| {
@@ -88,11 +94,23 @@ pub fn cast_ray<T: Traceable + Eq>(
                     * specular_intensity
                     * light_intensity;
 
-                accumulator_color + diffuse + specular
+                let mut reflect_color = Color::black();
+                let reflectivity = intersect.material.reflectivity;
+                if reflectivity > 0.0 {
+                    let reflect_dir = reflect(&-ray_direction, &intersect.normal).normalize();
+                    // Tenemos que hacer offset para evitar el acné
+                    let reflect_origin = intersect.point + 0.1 * intersect.normal;
+                    reflect_color =
+                        cast_ray(&reflect_origin, &reflect_dir, objects, lights, depth + 1)
+                }
+
+                accumulator_color
+                    + (diffuse + specular) * (1.0 - reflectivity)
+                    + (reflect_color * reflectivity)
             })
     } else {
         // Sky color...
-        0x181818.into()
+        skybox_color
     }
 }
 
@@ -122,6 +140,7 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                 &rotated_direction,
                 &data.spheres,
                 &data.lights,
+                0,
             );
 
             // Draw the pixel on screen with the returned color
