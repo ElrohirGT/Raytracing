@@ -15,6 +15,29 @@ fn reflect(incident: &Vec3, normal: &Vec3) -> Vec3 {
     incident - 2.0 * incident.dot(normal) * normal
 }
 
+fn refract(incident: &Vec3, normal: &Vec3, eta_t: f32) -> Vec3 {
+    let cosi = -incident.dot(normal).clamp(-1.0, 1.0);
+    // We assume the ray is leaving the object...
+    let mut n_cosi = cosi;
+    let mut eta = eta_t;
+    let mut n_normal = *normal;
+
+    // Ray is entering the object
+    if cosi < 0.0 {
+        n_cosi = -cosi;
+        eta = 1.0 / eta_t;
+        n_normal = -normal;
+    }
+
+    let k = 1.0 - eta * eta * (1.0 - n_cosi * n_cosi);
+
+    if k < 0.0 {
+        reflect(incident, &n_normal)
+    } else {
+        eta * incident + (eta * n_cosi - k.sqrt()) * n_normal
+    }
+}
+
 fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
     intersect: &Intersect,
     light: &Light,
@@ -82,7 +105,7 @@ pub fn cast_ray<T: Traceable + Eq>(
 
                 let diffuse_intensity = intersect.normal.dot(&light_dir).clamp(0.0, 1.0);
                 let diffuse = intersect.material.diffuse
-                    * intersect.material.albedo
+                    * intersect.material.albedo.0
                     * diffuse_intensity
                     * light_intensity;
 
@@ -91,7 +114,7 @@ pub fn cast_ray<T: Traceable + Eq>(
                     .clamp(0.0, 1.0)
                     .powf(intersect.material.specular);
                 let specular = current_light.color
-                    * intersect.material.reflectivity
+                    * intersect.material.albedo.1
                     * specular_intensity
                     * light_intensity;
 
@@ -105,9 +128,25 @@ pub fn cast_ray<T: Traceable + Eq>(
                         cast_ray(&reflect_origin, &reflect_dir, objects, lights, depth + 1)
                 }
 
+                let mut refract_color = Color::black();
+                let transparency = intersect.material.transparency;
+                if transparency < 0.0 {
+                    let refract_dir = refract(
+                        ray_direction,
+                        &intersect.normal,
+                        intersect.material.refractive_index,
+                    );
+                    // Tenemos que hacer offset para evitar el acné
+                    let refract_origin = intersect.point + 0.2 * intersect.normal;
+
+                    refract_color =
+                        cast_ray(&refract_origin, &refract_dir, objects, lights, depth + 1);
+                }
+
                 accumulator_color
-                    + (diffuse + specular) * (1.0 - reflectivity)
+                    + (diffuse + specular) * (1.0 - reflectivity - transparency)
                     + (reflect_color * reflectivity)
+                    + (refract_color * transparency)
             })
     } else {
         // Sky color...

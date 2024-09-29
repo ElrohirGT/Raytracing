@@ -129,17 +129,21 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     // println!("Reading file name: {}", file_name);
 
     let rubber = Material {
-        diffuse: 0xffffff.into(),
+        diffuse: 0xffff00.into(),
         specular: 1.0,
-        albedo: 0.9,
-        reflectivity: 0.1,
+        albedo: (0.9, 0.1),
+        reflectivity: 0.0,
+        transparency: 0.0,
+        refractive_index: 1.51,
     };
 
     let ivory = Material {
-        diffuse: 0xffff00.into(),
+        diffuse: 0xff00ff.into(),
         specular: 50.0,
-        albedo: 0.6,
-        reflectivity: 0.3,
+        albedo: (0.7, 0.3),
+        reflectivity: 0.5,
+        transparency: 0.1,
+        refractive_index: 1.0,
     };
 
     let spheres = vec![
