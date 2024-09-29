@@ -141,14 +141,14 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
             material: rubber,
         },
         Sphere {
-            center: Vec3::new(1.0, 1.0, 1.0),
+            center: Vec3::new(1.0, 3.0, 1.0),
             radius: 0.3,
             material: ivory,
         },
     ];
 
     let lights = vec![Light {
-        position: Vec3::new(2.0, 2.0, 5.0),
+        position: Vec3::new(2.0, 5.0, 2.0),
         color: Color::white(),
         intensity: 1.0,
     }];

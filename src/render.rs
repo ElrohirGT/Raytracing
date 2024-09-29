@@ -21,8 +21,11 @@ fn cast_shadow<T: Traceable + Send>(intersect: &Intersect, light: &Light, object
 
     for object in objects {
         let shadow_intersect = object.ray_intersect(&shadow_ray_origin, &light_dir);
-        if let Some(_) = shadow_intersect {
-            shadow_intensity = 1.0;
+        if let Some(object_position) = shadow_intersect {
+            let distance_to_light = nalgebra_glm::distance2(&light.position, &intersect.point);
+            let distance_from_object_to_light =
+                nalgebra_glm::distance2(&light.position, &object_position.point);
+            shadow_intensity = distance_from_object_to_light / distance_to_light;
             break;
         }
     }
