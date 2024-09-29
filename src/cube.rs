@@ -1,7 +1,12 @@
+use core::f32;
+
 use glm::{Vec2, Vec3};
 use rand::Rng;
 
-use crate::raytracer::{Intersect, Material, Traceable};
+use crate::{
+    are_equal,
+    raytracer::{Intersect, Material, Traceable},
+};
 
 #[derive(Debug)]
 pub struct Cube {
@@ -10,6 +15,7 @@ pub struct Cube {
     pub size: f32,
     pub material: Material,
     face_normals: Vec<Vec3>,
+    bounds: BoxBounds,
 }
 
 #[derive(Debug)]
@@ -42,10 +48,13 @@ impl Cube {
             backwards,  // backwards
         ];
 
+        let bounds = Cube::compute_bounds(&center, &up, &size);
+
         Cube {
             id,
             center,
             size,
+            bounds,
             material,
             face_normals,
         }
@@ -55,9 +64,8 @@ impl Cube {
     /// The index 0 represents the x bounds.
     /// The index 1 represents the y bounds.
     /// The index 2 represents the z bounds.
-    pub fn get_bounds(&self) -> BoxBounds {
-        let half_size = self.size / 2.0;
-        let center = self.center;
+    pub fn compute_bounds(center: &Vec3, up: &Vec3, size: &f32) -> BoxBounds {
+        let half_size = size / 2.0;
 
         let min = Vec3::new(
             center.x - half_size,
@@ -83,87 +91,191 @@ impl Eq for Cube {}
 
 impl Traceable for Cube {
     fn ray_intersect(&self, ray_origin: &Vec3, ray_direction: &Vec3) -> Option<Intersect> {
-        // Algorithm base on:
-        // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection.html
-        let cube_bounds = self.get_bounds();
+        let bounds = &self.bounds;
+        let mut t_min = (bounds.min.x - ray_origin.x) / ray_direction.x;
+        let mut t_max = (bounds.max.x - ray_origin.x) / ray_direction.x;
 
-        //         println!(
-        //             r#"Checking if ray:
-        // origin: {:?}
-        // direction: {:?}
-        // Collides!"#,
-        //             ray_origin, ray_direction
-        //         );
+        if t_min > t_max {
+            std::mem::swap(&mut t_min, &mut t_max);
+        }
 
-        let t0x = (cube_bounds.min.x - ray_origin.x) / ray_direction.x;
-        let t1x = (cube_bounds.max.x - ray_origin.x) / ray_direction.x;
+        let mut ty_min = (bounds.min.y - ray_origin.y) / ray_direction.y;
+        let mut ty_max = (bounds.max.y - ray_origin.y) / ray_direction.y;
 
-        let (txmin, txmax) = minmax(t0x, t1x);
-        let (mut tmin, mut tmax) = (txmin, txmax);
+        if ty_min > ty_max {
+            std::mem::swap(&mut ty_min, &mut ty_max);
+        }
 
-        let t0y = (cube_bounds.min.y - ray_origin.y) / ray_direction.y;
-        let t1y = (cube_bounds.max.y - ray_origin.y) / ray_direction.y;
-
-        let (tymin, tymax) = minmax(t0y, t1y);
-
-        if tmin > tymax || tymin > tmax {
+        if t_min > ty_max || ty_min > t_max {
             return None;
         }
 
-        tmin = tmin.max(tymin);
-        tmax = tmin.min(tymax);
+        t_min = t_min.max(ty_min);
+        t_max = t_max.min(ty_max);
 
-        let t0z = (cube_bounds.min.z - ray_origin.z) / ray_direction.z;
-        let t1z = (cube_bounds.max.z - ray_origin.z) / ray_direction.z;
+        let mut tz_min = (bounds.min.z - ray_origin.z) / ray_direction.z;
+        let mut tz_max = (bounds.max.z - ray_origin.z) / ray_direction.z;
 
-        let (tzmin, tzmax) = minmax(t0z, t1z);
+        if tz_min > tz_max {
+            std::mem::swap(&mut tz_min, &mut tz_max);
+        }
 
-        if tmin > tzmax || tzmin > tmax {
-            //             println!(
-            //                 r#"No collision found!
-            // {} > {} || {} > {}
-            // "#,
-            //                 tmin, tzmax, tzmin, tmax
-            //             );
+        if t_min > tz_max || tz_min > t_max {
             return None;
         }
 
-        // Both this values are the same...
-        tmin = tmin.max(tzmin);
-        // tmax = tmax.min(tzmax);
+        t_min = t_min.max(tz_min);
+        t_max = t_max.min(tz_max);
 
-        let point = ray_origin + ray_direction * tmin;
+        let distance = if t_min < 0.0 { t_max } else { t_min };
+        if distance < 0.0 {
+            return None;
+        }
 
-        let normal: Vec3 = self
-            .face_normals
-            .iter()
-            .filter(|face_normal| face_normal.dot(ray_direction) < 0.0)
-            .take(1)
-            .cloned()
-            .next()
-            .unwrap();
+        let intersection_point = Vec3::new(
+            ray_origin.x + ray_direction.x * distance,
+            ray_origin.y + ray_direction.y * distance,
+            ray_origin.z + ray_direction.z * distance,
+        );
 
-        let distance = glm::distance(ray_origin, &point);
-        let intersect = Intersect {
+        let mut normal = Vec3::new(0.0, 0.0, 0.0);
+        if (intersection_point.x - bounds.min.x).abs() < 1e-5 {
+            normal = Vec3::new(-1.0, 0.0, 0.0);
+        } else if (intersection_point.x - bounds.max.x).abs() < 1e-5 {
+            normal = Vec3::new(1.0, 0.0, 0.0);
+        } else if (intersection_point.y - bounds.min.y).abs() < 1e-5 {
+            normal = Vec3::new(0.0, -1.0, 0.0);
+        } else if (intersection_point.y - bounds.max.y).abs() < 1e-5 {
+            normal = Vec3::new(0.0, 1.0, 0.0);
+        } else if (intersection_point.z - bounds.min.z).abs() < 1e-5 {
+            normal = Vec3::new(0.0, 0.0, -1.0);
+        } else if (intersection_point.z - bounds.max.z).abs() < 1e-5 {
+            normal = Vec3::new(0.0, 0.0, 1.0);
+        }
+
+        Some(Intersect {
             distance,
-            point,
+            point: intersection_point,
             normal,
             material: self.material,
-        };
-
-        //         println!();
-        //         println!(
-        //             r#"Found collisions:
-        // x: ({}, {})
-        // y: ({}, {})
-        // z: ({}, {})
-        // Which generate the Point: {:?}"#,
-        //             txmin, txmax, tymin, tymax, tzmin, tzmax, point
-        //         );
-        //         println!("Found an intersection! {:#?}", intersect);
-
-        Some(intersect)
+        })
     }
+
+    // fn ray_intersect(&self, ray_origin: &Vec3, ray_direction: &Vec3) -> Option<Intersect> {
+    //     // Algorithm base on:
+    //     // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection.html
+    //     let cube_bounds = &self.bounds;
+    //
+    //     //         println!(
+    //     //             r#"Checking if ray:
+    //     // origin: {:?}
+    //     // direction: {:?}
+    //     // Collides!"#,
+    //     //             ray_origin, ray_direction
+    //     //         );
+    //
+    //     let t0x = (cube_bounds.min.x - ray_origin.x) / ray_direction.x;
+    //     let t1x = (cube_bounds.max.x - ray_origin.x) / ray_direction.x;
+    //
+    //     let (txmin, txmax) = minmax(t0x, t1x);
+    //     let (mut tmin, mut tmax) = (txmin, txmax);
+    //
+    //     let t0y = (cube_bounds.min.y - ray_origin.y) / ray_direction.y;
+    //     let t1y = (cube_bounds.max.y - ray_origin.y) / ray_direction.y;
+    //
+    //     let (tymin, tymax) = minmax(t0y, t1y);
+    //
+    //     if tmin > tymax || tymin > tmax {
+    //         return None;
+    //     }
+    //
+    //     tmin = tmin.max(tymin);
+    //     tmax = tmin.min(tymax);
+    //
+    //     let t0z = (cube_bounds.min.z - ray_origin.z) / ray_direction.z;
+    //     let t1z = (cube_bounds.max.z - ray_origin.z) / ray_direction.z;
+    //
+    //     let (tzmin, tzmax) = minmax(t0z, t1z);
+    //
+    //     if tmin > tzmax || tzmin > tmax {
+    //         //             println!(
+    //         //                 r#"No collision found!
+    //         // {} > {} || {} > {}
+    //         // "#,
+    //         //                 tmin, tzmax, tzmin, tmax
+    //         //             );
+    //         return None;
+    //     }
+    //
+    //     //         println!();
+    //     //         println!(
+    //     //             r#"Checking if ray:
+    //     // origin: {:?}
+    //     // direction: {:?}
+    //     // Collides!"#,
+    //     //             ray_origin, ray_direction
+    //     //         );
+    //     //
+    //     //         println!(
+    //     //             r#"Collides in X, Y and Z:
+    //     // X: {}, {}
+    //     // Y: {}, {}
+    //     // Z: {}, {}
+    //     // "#,
+    //     //             txmin, txmax, tymin, tymax, tzmin, tzmax
+    //     //         );
+    //
+    //     // Both this values are the same...
+    //     tmin = tmin.max(tzmin);
+    //     tmax = tmax.min(tzmax);
+    //
+    //     let distance = if tmin < 0.0 { tmax } else { tmin };
+    //     let point = ray_origin + ray_direction * distance;
+    //
+    //     let mut normal = Vec3::zeros();
+    //     if (point.x - cube_bounds.min.x).abs() < 1e-5 {
+    //         normal = Vec3::new(-1.0, 0.0, 0.0);
+    //     } else if (point.x - cube_bounds.max.x).abs() < 1e-5 {
+    //         normal = Vec3::new(1.0, 0.0, 0.0);
+    //     } else if (point.y - cube_bounds.min.y).abs() < 1e-5 {
+    //         normal = Vec3::new(0.0, -1.0, 0.0);
+    //     } else if (point.y - cube_bounds.max.y).abs() < 1e-5 {
+    //         normal = Vec3::new(0.0, 1.0, 0.0);
+    //     } else if (point.z - cube_bounds.min.z).abs() < 1e-5 {
+    //         normal = Vec3::new(0.0, 0.0, -1.0);
+    //     } else if (point.z - cube_bounds.max.z).abs() < 1e-5 {
+    //         normal = Vec3::new(0.0, 0.0, 1.0);
+    //     }
+    //
+    //     // let normal: Vec3 = self
+    //     //     .face_normals
+    //     //     .iter()
+    //     //     .filter(|face_normal| face_normal.dot(ray_direction) < 0.0)
+    //     //     .take(1)
+    //     //     .cloned()
+    //     //     .next()
+    //     //     .unwrap();
+    //
+    //     let intersect = Intersect {
+    //         distance,
+    //         point,
+    //         normal,
+    //         material: self.material,
+    //     };
+    //
+    //     //         println!();
+    //     //         println!(
+    //     //             r#"Found collisions:
+    //     // x: ({}, {})
+    //     // y: ({}, {})
+    //     // z: ({}, {})
+    //     // Which generate the Point: {:?}"#,
+    //     //             txmin, txmax, tymin, tymax, tzmin, tzmax, point
+    //     //         );
+    //     //         println!("Found an intersection! {:#?}", intersect);
+    //
+    //     Some(intersect)
+    // }
 }
 
 /// Computes the minimum and maximum of two values.

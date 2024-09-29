@@ -167,7 +167,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         1,
         Vec3::new(0.0, 0.0, 0.0),
         2.0,
-        ivory,
+        rubber,
         Vec3::new(0.0, 0.0, 1.0).normalize(),
     )];
 
