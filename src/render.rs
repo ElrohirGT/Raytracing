@@ -57,10 +57,9 @@ fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
                 break;
             }
 
-            let distance_to_light = nalgebra_glm::distance2(&light.position, &intersect.point);
             let distance_from_object_to_light =
                 nalgebra_glm::distance2(&light.position, &object_intersection.point);
-            shadow_intensity = distance_from_object_to_light / distance_to_light;
+            shadow_intensity = object_intersection.distance / distance_from_object_to_light;
 
             break;
         }
@@ -69,7 +68,7 @@ fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
     shadow_intensity
 }
 
-const TARGET_COLOR: u32 = 0x334b1d;
+const TARGET_COLOR: u32 = 0x030201;
 pub fn cast_ray<T: Traceable + Eq + Debug>(
     ray_origin: &Vec3,
     ray_direction: &Vec3,
@@ -137,8 +136,8 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                     tx_color * intersect.material.albedo.0 * diffuse_intensity * light_intensity;
                 if diffuse == TARGET_COLOR.into() {
                     println!(
-                        "Diffuse is black!\n{:?} * {} * {} * {}",
-                        tx_color, intersect.material.albedo.0, diffuse_intensity, light_intensity
+                        "Diffuse is black!\n{tx_color:?} * {} * {diffuse_intensity} * {light_intensity}",
+                         intersect.material.albedo.0, 
                     )
                 }
 

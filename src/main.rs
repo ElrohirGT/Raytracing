@@ -194,7 +194,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     //     ),
     //     Cube::new(
     //         2,
-    //         Vec3::new(0.0, 2.0, -3.2),
+    //         Vec3::new(0.0, 0.0, -2.6),
     //         2.5,
     //         dirt.clone(),
     //         Vec3::new(0.0, 0.0, 1.0).normalize(),
