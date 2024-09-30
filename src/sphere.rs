@@ -1,7 +1,8 @@
 use glm::{Vec2, Vec3};
 
 use crate::{
-    raytracer::{Intersect, Material, Traceable},
+    material::Material,
+    raytracer::{Intersect, Traceable},
     texture::CubeFace,
 };
 

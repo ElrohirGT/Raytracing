@@ -18,6 +18,10 @@ impl Color {
         Color::new(u8::MAX, u8::MAX, u8::MAX)
     }
 
+    pub const fn pink() -> Self {
+        Color::new(0xff, 0x00, 0xff)
+    }
+
     pub const fn default() -> Self {
         Self::black()
     }

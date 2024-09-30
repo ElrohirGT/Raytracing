@@ -3,8 +3,9 @@ use core::f32;
 use glm::{Vec2, Vec3};
 
 use crate::{
+    material::Material,
     minmax,
-    raytracer::{Intersect, Material, Traceable},
+    raytracer::{Intersect, Traceable},
     texture::CubeFace,
 };
 

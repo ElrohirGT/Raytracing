@@ -11,6 +11,7 @@ pub mod color;
 pub mod cube;
 pub mod framebuffer;
 pub mod light;
+pub mod material;
 pub mod raytracer;
 pub mod render;
 pub mod sphere;
