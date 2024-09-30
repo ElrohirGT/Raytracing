@@ -134,12 +134,12 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                 };
                 let diffuse =
                     tx_color * intersect.material.albedo.0 * diffuse_intensity * light_intensity;
-                if diffuse == TARGET_COLOR.into() {
-                    println!(
-                        "Diffuse is black!\n{tx_color:?} * {} * {diffuse_intensity} * {light_intensity}",
-                         intersect.material.albedo.0, 
-                    )
-                }
+                // if diffuse == TARGET_COLOR.into() {
+                //     println!(
+                //         "Diffuse is black!\n{tx_color:?} * {} * {diffuse_intensity} * {light_intensity}",
+                //          intersect.material.albedo.0,
+                //     )
+                // }
 
                 let specular_intensity = view_dir
                     .dot(&reflect_dir)
@@ -194,30 +194,30 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                     + (reflect_color * reflectivity)
                     + (refract_color * transparency);
 
-                if color == TARGET_COLOR.into() {
-                    println!(
-                        r#"Found target color! {color:?}
-DIFFUSE:
-intensity: {diffuse_intensity}
-light_intensity: {light_intensity}
-
-REFLECT:
-reflectivity: {reflectivity}
-
-REFRACT:
-transparency: {transparency}
-
-accum: {accumulator_color:?}
-+ ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
-+ ({reflect_color:?} * {reflectivity})
-+ ({refract_color:?} * {transparency})
-
-Intersect: {intersect:#?}
-ImpactObject: {impact_object:#?}
-CurrentLight: {current_light:#?}
-"#
-                    );
-                }
+                //                 if color == TARGET_COLOR.into() {
+                //                     println!(
+                //                         r#"Found target color! {color:?}
+                // DIFFUSE:
+                // intensity: {diffuse_intensity}
+                // light_intensity: {light_intensity}
+                //
+                // REFLECT:
+                // reflectivity: {reflectivity}
+                //
+                // REFRACT:
+                // transparency: {transparency}
+                //
+                // accum: {accumulator_color:?}
+                // + ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
+                // + ({reflect_color:?} * {reflectivity})
+                // + ({refract_color:?} * {transparency})
+                //
+                // Intersect: {intersect:#?}
+                // ImpactObject: {impact_object:#?}
+                // CurrentLight: {current_light:#?}
+                // "#
+                //                     );
+                //                 }
 
                 color
             })

@@ -128,7 +128,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     args.next();
 
     let asset_dir = args.next().expect("No asset directory received!");
-    println!("Reading assets from: {}", asset_dir);
+    println!("Reading assets from: {asset_dir}");
 
     // let rubber = Material {
     //     diffuse: 0xffff00.into(),
@@ -201,7 +201,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     //     ),
     // ];
 
-    println!("Cubes created: {:#?}", cubes);
+    println!("Cubes created: {cubes:#?}");
 
     let lights = vec![
         Light {
