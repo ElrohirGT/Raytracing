@@ -21,18 +21,22 @@ pub enum CubeFace {
 
 pub struct GameTextures {
     pub dirt: Texture,
+    pub stone: Texture,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Textures {
     DIRT,
+    STONE,
 }
 
 impl GameTextures {
     pub fn new(asset_dir: &str) -> Self {
-        let dirt = format!("{}{}", asset_dir, "dirt.png");
+        let dirt = format!("{asset_dir}dirt.png");
+        let stone = format!("{asset_dir}stone.png");
 
         let dirt = Texture::new(&dirt, 16);
+        let stone = Texture::new(&stone, 16);
         // let vertical_wall = Texture::new(&vertical_wall);
         // let corner_wall = Texture::new(&corner_wall);
         // let lolibunny = Texture::new(&lolibunny);
@@ -41,12 +45,13 @@ impl GameTextures {
         // let win_screen = AnimatedTexture::new(&win_screen);
         // let splash_screen = AnimatedTexture::new(&splash_screen);
 
-        GameTextures { dirt }
+        GameTextures { dirt, stone }
     }
 
     pub fn get_texture(&self, tx_type: &Textures) -> &Texture {
         match tx_type {
             Textures::DIRT => &self.dirt,
+            Textures::STONE => &self.stone,
         }
     }
 }
@@ -148,8 +153,6 @@ impl Texture {
         let point = origin + point;
         let x = point.x.clamp(origin.x, origin.x + sprite_size - 1.0) as u32;
         let y = point.y.clamp(origin.y, origin.y + sprite_size - 1.0) as u32;
-
-        
 
         self.get_pixel_color(x, y)
     }

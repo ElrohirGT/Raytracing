@@ -160,6 +160,16 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         texture: Some(Textures::DIRT),
     };
 
+    let stone = Material {
+        diffuse: 0xff00ff.into(),
+        specular: 1.0,
+        albedo: (0.95, 0.05),
+        reflectivity: 0.0,
+        transparency: 0.0,
+        refractive_index: 1.42,
+        texture: Some(Textures::STONE),
+    };
+
     let spheres = vec![];
 
     let platform_size = 8;
@@ -169,7 +179,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     let cubes = (-half_size..half_size)
         .map(|z| z as f32 * (cube_size + gap as f32))
         .flat_map(|z| {
-            let dirt = dirt.clone();
+            let stone = stone.clone();
             (-half_size..half_size)
                 .map(|x| x as f32 * (cube_size + gap as f32))
                 .map(move |x| {
@@ -177,7 +187,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
                         (z.abs() * platform_size as f32 + x.abs()) as u32,
                         Vec3::new(x, 0.0, z),
                         cube_size,
-                        dirt.clone(),
+                        stone.clone(),
                         Vec3::new(0.0, 0.0, 1.0).normalize(),
                     )
                 })
