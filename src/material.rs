@@ -50,3 +50,13 @@ pub const STONE: Material = Material {
     refractive_index: 1.42,
     texture: Some(Textures::STONE),
 };
+
+pub const WATER: Material = Material {
+    diffuse: Color::pink(),
+    specular: 1.0,
+    albedo: (0.5, 0.3),
+    reflectivity: 0.2,
+    transparency: 0.1,
+    refractive_index: 1.33,
+    texture: Some(Textures::WATER),
+};

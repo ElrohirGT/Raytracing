@@ -7,7 +7,7 @@ use raytracer::color::Color;
 use raytracer::cube::Cube;
 use raytracer::framebuffer;
 use raytracer::light::Light;
-use raytracer::material::{Material, STONE};
+use raytracer::material::{Material, STONE, WATER};
 use raytracer::render::{init_render, render};
 use raytracer::texture::{GameTextures, Textures};
 use raytracer::{Message, Model};
@@ -156,8 +156,8 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     let p_tall = 2;
     let half_size = p_width_height / 2;
     let cube_size = 1.5;
-    let gap = 0.00;
-    let cubes = (-half_size..half_size)
+    let gap = -1e-3;
+    let mut cubes: Vec<Cube> = (-half_size..half_size)
         .map(|z| z as f32 * (cube_size + gap as f32))
         .flat_map(|z| {
             let stone = STONE.clone();
@@ -174,6 +174,25 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
                 })
         })
         .collect();
+
+    let mut water_cubes = vec![
+        Cube::new(
+            65,
+            Vec3::new(0.0, cube_size, 0.0),
+            cube_size,
+            WATER,
+            Vec3::new(0.0, 0.0, 1.0).normalize(),
+        ),
+        Cube::new(
+            66,
+            Vec3::new(cube_size, cube_size, 0.0),
+            cube_size,
+            WATER,
+            Vec3::new(0.0, 0.0, 1.0).normalize(),
+        ),
+    ];
+
+    cubes.append(&mut water_cubes);
 
     // let cubes = vec![
     //     Cube::new(
