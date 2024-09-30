@@ -30,8 +30,7 @@ pub enum Textures {
 
 impl GameTextures {
     pub fn new(asset_dir: &str) -> Self {
-        // let dirt = format!("{}{}", asset_dir, "dirt.png");
-        let dirt = format!("{}{}", asset_dir, "dirTesting.png");
+        let dirt = format!("{}{}", asset_dir, "dirt.png");
 
         let dirt = Texture::new(&dirt, 16);
         // let vertical_wall = Texture::new(&vertical_wall);

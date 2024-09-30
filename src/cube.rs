@@ -158,7 +158,7 @@ impl Traceable for Cube {
             normal = Vec3::new(1.0, 0.0, 0.0);
             face = CubeFace::RIGHT;
             texture_cords = Vec2::new(
-                (point.y - cube_bounds.min.y) / self.size,
+                1.0 - (point.y - cube_bounds.min.y) / self.size,
                 (point.z - cube_bounds.min.z) / self.size,
             );
         } else if (point.y - cube_bounds.min.y).abs() < 1e-5 {
@@ -180,7 +180,7 @@ impl Traceable for Cube {
             face = CubeFace::BACKWARDS;
             texture_cords = Vec2::new(
                 (point.x - cube_bounds.min.x) / self.size,
-                (point.y - cube_bounds.min.y) / self.size,
+                1.0 - (point.y - cube_bounds.min.y) / self.size,
             );
         } else if (point.z - cube_bounds.max.z).abs() < 1e-5 {
             normal = Vec3::new(0.0, 0.0, 1.0);
