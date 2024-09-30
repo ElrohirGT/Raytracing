@@ -1,10 +1,14 @@
-use glm::Vec3;
+use glm::{Vec2, Vec3};
 
-use crate::color::Color;
+use crate::{
+    color::Color,
+    texture::{CubeFace, Texture, Textures},
+};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct Material {
     pub diffuse: Color,
+    pub texture: Option<Textures>,
     pub specular: f32,
     /// La cantidad de luz que un material absorbe, en porcentaje (0,1).
     /// y también
@@ -27,6 +31,7 @@ impl Material {
             reflectivity: 0.0,
             transparency: 0.0,
             refractive_index: 0.0,
+            texture: None,
         }
     }
 }
@@ -37,6 +42,8 @@ pub struct Intersect {
     pub point: Vec3,
     pub normal: Vec3,
     pub material: Material,
+    pub texture_cords: Vec2,
+    pub face: CubeFace,
 }
 
 pub const EMPTY_INTERSECT: Intersect = Intersect {
@@ -44,6 +51,8 @@ pub const EMPTY_INTERSECT: Intersect = Intersect {
     point: Vec3::new(0.0, 0.0, 0.0),
     normal: Vec3::new(0.0, 0.0, 0.0),
     material: Material::default(),
+    texture_cords: Vec2::new(0.0, 0.0),
+    face: CubeFace::TOP,
 };
 
 pub trait Traceable {

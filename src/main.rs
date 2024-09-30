@@ -9,8 +9,10 @@ use raytracer::light::Light;
 use raytracer::raytracer::Material;
 use raytracer::render::{init_render, render};
 use raytracer::sphere::Sphere;
+use raytracer::texture::{GameTextures, Textures};
 use raytracer::{Message, Model};
 use std::collections::VecDeque;
+use std::env;
 use std::f32::consts::PI;
 use std::time::{Duration, Instant};
 
@@ -123,11 +125,11 @@ fn main() {
 
 /// Init the default state
 fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
-    // let mut args = env::args();
-    // args.next();
-    //
-    // let file_name = args.next().expect("No maze file name received!");
-    // println!("Reading file name: {}", file_name);
+    let mut args = env::args();
+    args.next();
+
+    let asset_dir = args.next().expect("No asset directory received!");
+    println!("Reading assets from: {}", asset_dir);
 
     let rubber = Material {
         diffuse: 0xffff00.into(),
@@ -136,6 +138,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         reflectivity: 0.0,
         transparency: 0.0,
         refractive_index: 1.51,
+        texture: Some(Textures::DIRT),
     };
 
     let ivory = Material {
@@ -145,6 +148,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         reflectivity: 0.5,
         transparency: 0.1,
         refractive_index: 1.0,
+        texture: None,
     };
 
     // let spheres = vec![
@@ -185,11 +189,14 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         Vec3::new(0.0, 1.0, 0.0),
     );
 
+    let textures = GameTextures::new(&asset_dir);
+
     Model {
         spheres,
         cubes,
         camera,
         lights,
+        textures,
     }
 }
 

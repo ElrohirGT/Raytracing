@@ -2,6 +2,7 @@ use camera::Camera;
 use cube::Cube;
 use light::Light;
 use sphere::Sphere;
+use texture::GameTextures;
 
 pub mod bmp;
 pub mod camera;
@@ -25,6 +26,7 @@ pub struct Model {
     pub cubes: Vec<Cube>,
     pub lights: Vec<Light>,
     pub camera: Camera,
+    pub textures: GameTextures,
 }
 
 pub enum Message {

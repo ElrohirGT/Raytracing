@@ -1,6 +1,9 @@
-use glm::Vec3;
+use glm::{Vec2, Vec3};
 
-use crate::raytracer::{Intersect, Material, Traceable};
+use crate::{
+    raytracer::{Intersect, Material, Traceable},
+    texture::CubeFace,
+};
 
 #[derive(Debug)]
 pub struct Sphere {
@@ -37,9 +40,11 @@ impl Traceable for Sphere {
 
                 Some(Intersect {
                     distance,
-                    material: self.material,
+                    material: self.material.clone(),
                     point,
                     normal,
+                    face: CubeFace::NONE,
+                    texture_cords: Vec2::zeros(),
                 })
             } else {
                 None

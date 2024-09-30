@@ -1,8 +1,11 @@
 use core::f32;
 
-use glm::Vec3;
+use glm::{Vec2, Vec3};
 
-use crate::raytracer::{Intersect, Material, Traceable};
+use crate::{
+    raytracer::{Intersect, Material, Traceable},
+    texture::CubeFace,
+};
 
 #[derive(Debug)]
 pub struct Cube {
@@ -141,25 +144,39 @@ impl Traceable for Cube {
         let point = ray_origin + ray_direction * distance;
 
         let mut normal = Vec3::zeros();
+        let mut face = CubeFace::NONE;
+        let texture_cords = Vec2::new(
+            (point.x - cube_bounds.min.x) / self.size,
+            (point.y - cube_bounds.min.y) / self.size,
+        );
+
         if (point.x - cube_bounds.min.x).abs() < 1e-5 {
             normal = Vec3::new(-1.0, 0.0, 0.0);
+            face = CubeFace::LEFT;
         } else if (point.x - cube_bounds.max.x).abs() < 1e-5 {
             normal = Vec3::new(1.0, 0.0, 0.0);
+            face = CubeFace::RIGHT;
         } else if (point.y - cube_bounds.min.y).abs() < 1e-5 {
             normal = Vec3::new(0.0, -1.0, 0.0);
+            face = CubeFace::BOTTOM;
         } else if (point.y - cube_bounds.max.y).abs() < 1e-5 {
             normal = Vec3::new(0.0, 1.0, 0.0);
+            face = CubeFace::TOP;
         } else if (point.z - cube_bounds.min.z).abs() < 1e-5 {
             normal = Vec3::new(0.0, 0.0, -1.0);
+            face = CubeFace::BACKWARDS;
         } else if (point.z - cube_bounds.max.z).abs() < 1e-5 {
             normal = Vec3::new(0.0, 0.0, 1.0);
+            face = CubeFace::FORWARDS;
         }
 
         let intersect = Intersect {
             distance,
             point,
             normal,
-            material: self.material,
+            material: self.material.clone(),
+            texture_cords,
+            face,
         };
 
         //         println!();

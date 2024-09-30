@@ -2,6 +2,7 @@ use glm::Vec3;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::light::Light;
+use crate::texture::GameTextures;
 use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
 
@@ -66,9 +67,10 @@ pub fn cast_ray<T: Traceable + Eq>(
     ray_direction: &Vec3,
     objects: &[T],
     lights: &[Light],
+    textures: &GameTextures,
     depth: u32,
 ) -> Color {
-    let skybox_color = 0x181818.into();
+    let skybox_color = 0x383838.into();
     if depth > 3 {
         return skybox_color;
     }
@@ -104,10 +106,19 @@ pub fn cast_ray<T: Traceable + Eq>(
                 let light_intensity = current_light.intensity * (1.0 - shadow_intensity);
 
                 let diffuse_intensity = intersect.normal.dot(&light_dir).clamp(0.0, 1.0);
-                let diffuse = intersect.material.diffuse
-                    * intersect.material.albedo.0
-                    * diffuse_intensity
-                    * light_intensity;
+                let diffuse = match intersect.material.texture {
+                    Some(tx_type) => {
+                        let texture = textures.get_texture(&tx_type);
+                        texture.get_color_of_face(
+                            &intersect.face,
+                            intersect.texture_cords.x * texture.sprite_size as f32,
+                            intersect.texture_cords.y * texture.sprite_size as f32,
+                        )
+                    }
+                    None => intersect.material.diffuse,
+                };
+                let diffuse =
+                    diffuse * intersect.material.albedo.0 * diffuse_intensity * light_intensity;
 
                 let specular_intensity = view_dir
                     .dot(&reflect_dir)
@@ -124,8 +135,14 @@ pub fn cast_ray<T: Traceable + Eq>(
                     let reflect_dir = reflect(&-ray_direction, &intersect.normal).normalize();
                     // Tenemos que hacer offset para evitar el acné
                     let reflect_origin = intersect.point + 0.1 * intersect.normal;
-                    reflect_color =
-                        cast_ray(&reflect_origin, &reflect_dir, objects, lights, depth + 1)
+                    reflect_color = cast_ray(
+                        &reflect_origin,
+                        &reflect_dir,
+                        objects,
+                        lights,
+                        textures,
+                        depth + 1,
+                    )
                 }
 
                 let mut refract_color = Color::black();
@@ -139,8 +156,14 @@ pub fn cast_ray<T: Traceable + Eq>(
                     // Tenemos que hacer offset para evitar el acné
                     let refract_origin = intersect.point + 0.2 * intersect.normal;
 
-                    refract_color =
-                        cast_ray(&refract_origin, &refract_dir, objects, lights, depth + 1);
+                    refract_color = cast_ray(
+                        &refract_origin,
+                        &refract_dir,
+                        objects,
+                        lights,
+                        textures,
+                        depth + 1,
+                    );
                 }
 
                 accumulator_color
@@ -182,6 +205,7 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                     &rotated_direction,
                     &data.cubes,
                     &data.lights,
+                    &data.textures,
                     0,
                 )
             })
