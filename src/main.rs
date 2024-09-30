@@ -71,8 +71,8 @@ fn main() {
             .filter_map(|key| match key {
                 Key::Left => Some(Message::RotateCamera(PLAYER_ROTATION_SPEED, 0.0)),
                 Key::Right => Some(Message::RotateCamera(-PLAYER_ROTATION_SPEED, 0.0)),
-                Key::Up => Some(Message::RotateCamera(0.0, PLAYER_ROTATION_SPEED)),
-                Key::Down => Some(Message::RotateCamera(0.0, -PLAYER_ROTATION_SPEED)),
+                Key::Up => Some(Message::RotateCamera(0.0, -PLAYER_ROTATION_SPEED)),
+                Key::Down => Some(Message::RotateCamera(0.0, PLAYER_ROTATION_SPEED)),
 
                 Key::W => Some(Message::ZoomCamera(PLAYER_SPEED)),
                 Key::S => Some(Message::ZoomCamera(-PLAYER_SPEED)),
@@ -172,8 +172,9 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     let spheres = vec![];
 
-    let platform_size = 8;
-    let half_size = platform_size / 2;
+    let p_width_height = 8;
+    let p_tall = 2;
+    let half_size = p_width_height / 2;
     let cube_size = 1.5;
     let gap = 0.00;
     let cubes = (-half_size..half_size)
@@ -184,7 +185,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
                 .map(|x| x as f32 * (cube_size + gap as f32))
                 .map(move |x| {
                     Cube::new(
-                        (z.abs() * platform_size as f32 + x.abs()) as u32,
+                        (z.abs() * p_width_height as f32 + x.abs()) as u32,
                         Vec3::new(x, 0.0, z),
                         cube_size,
                         stone.clone(),
@@ -255,11 +256,16 @@ fn update(data: Model, msg: Message) -> Model {
 
             Model { camera, ..data }
         }
-        Message::ZoomCamera(delta_vel) => {
+        Message::ZoomCamera(delta_zoom) => {
             let Model { mut camera, .. } = data;
 
-            camera.advance_cam(delta_vel);
+            camera.zoom_cam(delta_zoom);
 
+            Model { camera, ..data }
+        }
+        Message::MoveFocus(delta_pos) => {
+            let Model { mut camera, .. } = data;
+            camera.move_focus(delta_pos);
             Model { camera, ..data }
         }
     }

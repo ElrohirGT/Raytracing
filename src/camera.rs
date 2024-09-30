@@ -41,7 +41,7 @@ impl Camera {
     }
 
     /// Advances the Camera by a given delta.
-    pub fn advance_cam(&mut self, delta: f32) {
+    pub fn zoom_cam(&mut self, delta: f32) {
         self.has_changed = true;
         let forward_dir = (self.center - self.eye).normalize();
         self.eye += forward_dir * delta;
@@ -91,5 +91,14 @@ impl Camera {
 
     pub fn reset_change(&mut self) {
         self.has_changed = false;
+    }
+
+    pub fn move_focus(&mut self, delta_pos: Vec3) {
+        self.has_changed = true;
+        self.center += delta_pos;
+    }
+
+    pub fn direction(&self) -> Vec3 {
+        (self.center - self.eye).normalize()
     }
 }

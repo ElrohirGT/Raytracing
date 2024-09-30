@@ -1,5 +1,6 @@
 use camera::Camera;
 use cube::Cube;
+use glm::Vec3;
 use light::{AmbientLightIntensity, Light};
 use sphere::Sphere;
 use texture::GameTextures;
@@ -43,4 +44,5 @@ pub struct Model {
 pub enum Message {
     RotateCamera(f32, f32),
     ZoomCamera(f32),
+    MoveFocus(Vec3),
 }
