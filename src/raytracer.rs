@@ -2,7 +2,7 @@ use glm::{Vec2, Vec3};
 
 use crate::{
     color::Color,
-    texture::{CubeFace, Texture, Textures},
+    texture::{CubeFace, Textures},
 };
 
 #[derive(Debug, Clone)]

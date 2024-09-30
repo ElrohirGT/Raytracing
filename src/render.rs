@@ -67,6 +67,7 @@ pub fn cast_ray<T: Traceable + Eq>(
     ray_direction: &Vec3,
     objects: &[T],
     lights: &[Light],
+    ambient_light: &Light,
     textures: &GameTextures,
     depth: u32,
 ) -> Color {
@@ -105,7 +106,8 @@ pub fn cast_ray<T: Traceable + Eq>(
                 );
                 let light_intensity = current_light.intensity * (1.0 - shadow_intensity);
 
-                let diffuse_intensity = intersect.normal.dot(&light_dir).clamp(0.0, 1.0);
+                let diffuse_intensity =
+                    intersect.normal.dot(&light_dir).clamp(0.0, 1.0) + ambient_light.intensity;
                 let diffuse = match intersect.material.texture {
                     Some(tx_type) => {
                         let texture = textures.get_texture(&tx_type);
@@ -140,6 +142,7 @@ pub fn cast_ray<T: Traceable + Eq>(
                         &reflect_dir,
                         objects,
                         lights,
+                        ambient_light,
                         textures,
                         depth + 1,
                     )
@@ -161,6 +164,7 @@ pub fn cast_ray<T: Traceable + Eq>(
                         &refract_dir,
                         objects,
                         lights,
+                        ambient_light,
                         textures,
                         depth + 1,
                     );
@@ -205,6 +209,7 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                     &rotated_direction,
                     &data.cubes,
                     &data.lights,
+                    &data.ambient_light,
                     &data.textures,
                     0,
                 )

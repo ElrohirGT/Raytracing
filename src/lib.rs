@@ -25,6 +25,7 @@ pub struct Model {
     pub spheres: Vec<Sphere>,
     pub cubes: Vec<Cube>,
     pub lights: Vec<Light>,
+    pub ambient_light: Light,
     pub camera: Camera,
     pub textures: GameTextures,
 }

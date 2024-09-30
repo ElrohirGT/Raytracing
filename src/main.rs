@@ -1,6 +1,7 @@
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use mouse_rs::Mouse;
 use nalgebra_glm::Vec3;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use raytracer::camera::Camera;
 use raytracer::color::Color;
 use raytracer::cube::Cube;
@@ -130,67 +131,100 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     let asset_dir = args.next().expect("No asset directory received!");
     println!("Reading assets from: {}", asset_dir);
 
-    let rubber = Material {
-        diffuse: 0xffff00.into(),
+    // let rubber = Material {
+    //     diffuse: 0xffff00.into(),
+    //     specular: 1.0,
+    //     albedo: (0.9, 0.1),
+    //     reflectivity: 0.0,
+    //     transparency: 0.0,
+    //     refractive_index: 1.51,
+    //     texture: Some(Textures::DIRT),
+    // };
+
+    // let ivory = Material {
+    //     diffuse: 0xff00ff.into(),
+    //     specular: 50.0,
+    //     albedo: (0.7, 0.3),
+    //     reflectivity: 0.5,
+    //     transparency: 0.1,
+    //     refractive_index: 1.0,
+    //     texture: None,
+    // };
+
+    let dirt = Material {
+        diffuse: 0xff00ff.into(),
         specular: 1.0,
-        albedo: (0.9, 0.1),
+        albedo: (0.95, 0.05),
         reflectivity: 0.0,
         transparency: 0.0,
-        refractive_index: 1.51,
+        refractive_index: 1.42,
         texture: Some(Textures::DIRT),
     };
 
-    let ivory = Material {
-        diffuse: 0xff00ff.into(),
-        specular: 50.0,
-        albedo: (0.7, 0.3),
-        reflectivity: 0.5,
-        transparency: 0.1,
-        refractive_index: 1.0,
-        texture: None,
-    };
-
-    // let spheres = vec![
-    //     Sphere {
-    //         id: 1,
-    //         center: Vec3::new(0.0, 0.0, 0.0),
-    //         radius: 1.0,
-    //         material: rubber,
-    //     },
-    //     Sphere {
-    //         id: 2,
-    //         center: Vec3::new(1.0, 3.0, 1.0),
-    //         radius: 0.3,
-    //         material: ivory,
-    //     },
-    // ];
     let spheres = vec![];
 
-    let cubes = vec![Cube::new(
-        1,
-        Vec3::new(0.0, 0.0, 0.0),
-        2.5,
-        rubber,
-        Vec3::new(0.0, 0.0, 1.0).normalize(),
-    )];
+    let platform_size = 8;
+    let half_size = platform_size / 2;
+    let cube_size = 1.5;
+    let gap = 0.01;
+    let cubes = (-half_size..half_size)
+        .map(|z| z as f32 * (cube_size + gap as f32))
+        .flat_map(|z| {
+            let dirt = dirt.clone();
+            (-half_size..half_size)
+                .map(|x| x as f32 * (cube_size + gap as f32))
+                .map(move |x| {
+                    Cube::new(
+                        (z.abs() * platform_size as f32 + x.abs()) as u32,
+                        Vec3::new(x, 0.0, z),
+                        cube_size,
+                        dirt.clone(),
+                        Vec3::new(0.0, 0.0, 1.0).normalize(),
+                    )
+                })
+        })
+        .collect();
+
+    // let cubes = vec![
+    //     Cube::new(
+    //         1,
+    //         Vec3::new(0.0, 0.0, 0.0),
+    //         2.5,
+    //         dirt.clone(),
+    //         Vec3::new(0.0, 0.0, 1.0).normalize(),
+    //     ),
+    //     Cube::new(
+    //         2,
+    //         Vec3::new(0.0, 0.0, -2.50),
+    //         2.5,
+    //         dirt.clone(),
+    //         Vec3::new(0.0, 0.0, 1.0).normalize(),
+    //     ),
+    // ];
 
     println!("Cubes created: {:#?}", cubes);
 
     let lights = vec![
         Light {
-            position: Vec3::new(2.0, 5.0, 2.0),
+            position: Vec3::new(4.0, 10.0, -4.0),
             color: Color::white(),
-            intensity: 2.0,
+            intensity: 1.0,
         },
-        Light {
-            position: Vec3::new(-2.0, -5.0, -2.0),
-            color: Color::white(),
-            intensity: 2.0,
-        },
+        // Light {
+        //     position: Vec3::new(-2.0, 10.0, -2.0),
+        //     color: Color::white(),
+        //     intensity: 2.0,
+        // },
     ];
 
+    let ambient_light = Light {
+        color: 0x404040.into(),
+        intensity: 0.15,
+        position: Vec3::zeros(),
+    };
+
     let camera = Camera::new(
-        Vec3::new(0.0, 0.0, 5.0),
+        Vec3::new(0.0, 0.0, 10.0),
         Vec3::new(0.0, 0.0, 0.0),
         Vec3::new(0.0, 1.0, 0.0),
     );
@@ -202,6 +236,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         cubes,
         camera,
         lights,
+        ambient_light,
         textures,
     }
 }
