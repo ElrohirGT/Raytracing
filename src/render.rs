@@ -185,9 +185,9 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
     let aspect_ratio = width / height;
 
     let pixel_colors: Vec<Color> = (0..framebuffer.height)
-        .into_iter()
+        .into_par_iter()
         .flat_map(|y| {
-            (0..framebuffer.width).into_iter().map(move |x| {
+            (0..framebuffer.width).into_par_iter().map(move |x| {
                 // Map the pixel coordinate to screen space [-1, 1]
                 let screen_x = (2.0 * x as f32) / width - 1.0;
                 let screen_y = -(2.0 * y as f32) / height + 1.0;
