@@ -22,21 +22,29 @@ pub enum CubeFace {
 pub struct GameTextures {
     pub dirt: Texture,
     pub stone: Texture,
+    pub moss: Texture,
+    pub water: Texture,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Textures {
     DIRT,
     STONE,
+    MOSS,
+    WATER,
 }
 
 impl GameTextures {
     pub fn new(asset_dir: &str) -> Self {
         let dirt = format!("{asset_dir}dirt.png");
         let stone = format!("{asset_dir}stone.png");
+        let moss = format!("{asset_dir}moss.png");
+        let water = format!("{asset_dir}water.png");
 
         let dirt = Texture::new(&dirt, 16);
         let stone = Texture::new(&stone, 16);
+        let moss = Texture::new(&moss, 16);
+        let water = Texture::new(&water, 16);
         // let vertical_wall = Texture::new(&vertical_wall);
         // let corner_wall = Texture::new(&corner_wall);
         // let lolibunny = Texture::new(&lolibunny);
@@ -45,13 +53,20 @@ impl GameTextures {
         // let win_screen = AnimatedTexture::new(&win_screen);
         // let splash_screen = AnimatedTexture::new(&splash_screen);
 
-        GameTextures { dirt, stone }
+        GameTextures {
+            dirt,
+            stone,
+            moss,
+            water,
+        }
     }
 
     pub fn get_texture(&self, tx_type: &Textures) -> &Texture {
         match tx_type {
             Textures::DIRT => &self.dirt,
             Textures::STONE => &self.stone,
+            Textures::MOSS => &self.moss,
+            Textures::WATER => &self.water,
         }
     }
 }
