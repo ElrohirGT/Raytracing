@@ -152,45 +152,29 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     let spheres = vec![];
 
-    let p_width_height = 8;
-    let p_tall = 2;
-    let half_size = p_width_height / 2;
+    let object_id = 0;
+    let p_width_height = 4;
     let cube_size = 1.5;
     let gap = -1e-3;
-    let mut cubes: Vec<Cube> = (-half_size..half_size)
-        .map(|z| z as f32 * (cube_size + gap as f32))
-        .flat_map(|z| {
-            let stone = STONE.clone();
-            (-half_size..half_size)
-                .map(|x| x as f32 * (cube_size + gap as f32))
-                .map(move |x| {
-                    Cube::new(
-                        (z.abs() * p_width_height as f32 + x.abs()) as u32,
-                        Vec3::new(x, 0.0, z),
-                        cube_size,
-                        stone.clone(),
-                        Vec3::new(0.0, 0.0, 1.0).normalize(),
-                    )
-                })
-        })
-        .collect();
 
-    let mut water_cubes = vec![
-        Cube::new(
-            65,
-            Vec3::new(0.0, cube_size, 0.0),
-            cube_size,
-            WATER,
-            Vec3::new(0.0, 0.0, 1.0).normalize(),
-        ),
-        Cube::new(
-            66,
-            Vec3::new(cube_size, cube_size, 0.0),
-            cube_size,
-            WATER,
-            Vec3::new(0.0, 0.0, 1.0).normalize(),
-        ),
-    ];
+    let mut cubes = generate_platform(
+        object_id,
+        Vec3::new(0.0, -cube_size * 3.0, 0.0),
+        p_width_height,
+        gap,
+        cube_size,
+        STONE,
+    );
+    let object_id = cubes.len() + 1;
+
+    let mut water_cubes = generate_platform(
+        object_id as u32,
+        Vec3::new(0.0, -cube_size * 2.0, 0.0),
+        p_width_height,
+        gap,
+        cube_size,
+        WATER,
+    );
 
     cubes.append(&mut water_cubes);
 
@@ -215,7 +199,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     let lights = vec![
         Light {
-            position: Vec3::new(0.0, 10.0, -3.2),
+            position: Vec3::new(0.0, 10.0, -8.2),
             color: Color::white(),
             intensity: 1.0,
         },
@@ -226,7 +210,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         // },
     ];
 
-    let ambient_light = 0.15;
+    let ambient_light = 0.20;
 
     let camera = Camera::new(
         Vec3::new(0.0, 0.0, 10.0),
@@ -268,4 +252,36 @@ fn update(data: Model, msg: Message) -> Model {
             Model { camera, ..data }
         }
     }
+}
+
+fn generate_platform(
+    id_count: u32,
+    center: Vec3,
+    size: u16,
+    gap: f32,
+    cube_size: f32,
+    material: Material,
+) -> Vec<Cube> {
+    let mut object_id = id_count;
+    let half_size: i32 = (size / 2) as i32;
+    (-half_size..half_size)
+        .map(|z| z as f32 * (cube_size + gap))
+        .flat_map(|z| {
+            let material = material.clone();
+            (-half_size..half_size)
+                .map(|x| x as f32 * (cube_size + gap))
+                .map(move |x| {
+                    let id = object_id;
+                    object_id += 1;
+
+                    Cube::new(
+                        id,
+                        Vec3::new(x, 0.0, z) + center,
+                        cube_size,
+                        material.clone(),
+                        Vec3::new(0.0, 0.0, 1.0).normalize(),
+                    )
+                })
+        })
+        .collect()
 }

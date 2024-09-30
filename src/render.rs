@@ -68,7 +68,7 @@ fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
     shadow_intensity
 }
 
-const TARGET_COLOR: u32 = 0x030201;
+const TARGET_COLOR: u32 = 0x000000;
 pub fn cast_ray<T: Traceable + Eq + Debug>(
     ray_origin: &Vec3,
     ray_direction: &Vec3,
@@ -78,8 +78,8 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
     textures: &GameTextures,
     depth: u32,
 ) -> Color {
-    let skybox_color = 0x383838.into();
-    if depth > 3 {
+    let skybox_color = 0x87CEEB.into();
+    if depth > 4 {
         return skybox_color;
     }
 
@@ -169,7 +169,7 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
 
                 let mut refract_color = Color::black();
                 let transparency = intersect.material.transparency;
-                if transparency < 0.0 {
+                if transparency > 0.0 {
                     let refract_dir = refract(
                         ray_direction,
                         &intersect.normal,
@@ -194,30 +194,31 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                     + (reflect_color * reflectivity)
                     + (refract_color * transparency);
 
-                //                 if color == TARGET_COLOR.into() {
-                //                     println!(
-                //                         r#"Found target color! {color:?}
-                // DIFFUSE:
-                // intensity: {diffuse_intensity}
-                // light_intensity: {light_intensity}
-                //
-                // REFLECT:
-                // reflectivity: {reflectivity}
-                //
-                // REFRACT:
-                // transparency: {transparency}
-                //
-                // accum: {accumulator_color:?}
-                // + ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
-                // + ({reflect_color:?} * {reflectivity})
-                // + ({refract_color:?} * {transparency})
-                //
-                // Intersect: {intersect:#?}
-                // ImpactObject: {impact_object:#?}
-                // CurrentLight: {current_light:#?}
-                // "#
-                //                     );
-                //                 }
+                if color == TARGET_COLOR.into() {
+                    println!();
+                    println!(
+                        r#"Found target color! {color:?}
+                DIFFUSE:
+                intensity: {diffuse_intensity}
+                light_intensity: {light_intensity}
+
+                REFLECT:
+                reflectivity: {reflectivity}
+
+                REFRACT:
+                transparency: {transparency}
+
+                accum: {accumulator_color:?}
+                + ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
+                + ({reflect_color:?} * {reflectivity})
+                + ({refract_color:?} * {transparency})
+
+                Intersect: {intersect:#?}
+                ImpactObject: {impact_object:#?}
+                CurrentLight: {current_light:#?}
+                "#
+                    );
+                }
 
                 color
             })

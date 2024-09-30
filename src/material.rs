@@ -54,9 +54,9 @@ pub const STONE: Material = Material {
 pub const WATER: Material = Material {
     diffuse: Color::pink(),
     specular: 1.0,
-    albedo: (0.5, 0.3),
+    albedo: (0.4, 0.6),
     reflectivity: 0.2,
-    transparency: 0.1,
+    transparency: 0.9,
     refractive_index: 1.33,
     texture: Some(Textures::WATER),
 };
