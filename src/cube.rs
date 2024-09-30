@@ -3,6 +3,7 @@ use core::f32;
 use glm::{Vec2, Vec3};
 
 use crate::{
+    minmax,
     raytracer::{Intersect, Material, Traceable},
     texture::CubeFace,
 };
@@ -147,42 +148,43 @@ impl Traceable for Cube {
         let mut face = CubeFace::NONE;
         let mut texture_cords = Vec2::zeros();
 
-        if (point.x - cube_bounds.min.x).abs() < 1e-5 {
+        let limit = 1e-3;
+        if (point.x - cube_bounds.min.x).abs() < limit {
             normal = Vec3::new(-1.0, 0.0, 0.0);
             face = CubeFace::LEFT;
             texture_cords = Vec2::new(
                 (point.y - cube_bounds.min.y) / self.size,
                 (point.z - cube_bounds.min.z) / self.size,
             );
-        } else if (point.x - cube_bounds.max.x).abs() < 1e-5 {
+        } else if (point.x - cube_bounds.max.x).abs() < limit {
             normal = Vec3::new(1.0, 0.0, 0.0);
             face = CubeFace::RIGHT;
             texture_cords = Vec2::new(
                 1.0 - (point.y - cube_bounds.min.y) / self.size,
                 (point.z - cube_bounds.min.z) / self.size,
             );
-        } else if (point.y - cube_bounds.min.y).abs() < 1e-5 {
+        } else if (point.y - cube_bounds.min.y).abs() < limit {
             normal = Vec3::new(0.0, -1.0, 0.0);
             face = CubeFace::BOTTOM;
             texture_cords = Vec2::new(
                 (point.x - cube_bounds.min.x) / self.size,
                 (point.z - cube_bounds.min.z) / self.size,
             );
-        } else if (point.y - cube_bounds.max.y).abs() < 1e-5 {
+        } else if (point.y - cube_bounds.max.y).abs() < limit {
             normal = Vec3::new(0.0, 1.0, 0.0);
             face = CubeFace::TOP;
             texture_cords = Vec2::new(
                 (point.x - cube_bounds.min.x) / self.size,
                 (point.z - cube_bounds.min.z) / self.size,
             );
-        } else if (point.z - cube_bounds.min.z).abs() < 1e-5 {
+        } else if (point.z - cube_bounds.min.z).abs() < limit {
             normal = Vec3::new(0.0, 0.0, -1.0);
             face = CubeFace::BACKWARDS;
             texture_cords = Vec2::new(
                 (point.x - cube_bounds.min.x) / self.size,
                 1.0 - (point.y - cube_bounds.min.y) / self.size,
             );
-        } else if (point.z - cube_bounds.max.z).abs() < 1e-5 {
+        } else if (point.z - cube_bounds.max.z).abs() < limit {
             normal = Vec3::new(0.0, 0.0, 1.0);
             face = CubeFace::FORWARDS;
             texture_cords = Vec2::new(
@@ -212,15 +214,5 @@ impl Traceable for Cube {
         //         println!("Found an intersection! {:#?}", intersect);
 
         Some(intersect)
-    }
-}
-
-/// Computes the minimum and maximum of two values.
-/// Returns: A tuple in the form of (min, max).
-fn minmax(a: f32, b: f32) -> (f32, f32) {
-    if a < b {
-        (a, b)
-    } else {
-        (b, a)
     }
 }

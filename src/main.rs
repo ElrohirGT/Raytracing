@@ -165,7 +165,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     let platform_size = 8;
     let half_size = platform_size / 2;
     let cube_size = 1.5;
-    let gap = 0.01;
+    let gap = 0.00;
     let cubes = (-half_size..half_size)
         .map(|z| z as f32 * (cube_size + gap as f32))
         .flat_map(|z| {
@@ -194,7 +194,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     //     ),
     //     Cube::new(
     //         2,
-    //         Vec3::new(0.0, 0.0, -2.50),
+    //         Vec3::new(0.0, 2.0, -3.2),
     //         2.5,
     //         dirt.clone(),
     //         Vec3::new(0.0, 0.0, 1.0).normalize(),
@@ -205,7 +205,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     let lights = vec![
         Light {
-            position: Vec3::new(4.0, 10.0, -4.0),
+            position: Vec3::new(0.0, 10.0, -3.2),
             color: Color::white(),
             intensity: 1.0,
         },
@@ -216,11 +216,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         // },
     ];
 
-    let ambient_light = Light {
-        color: 0x404040.into(),
-        intensity: 0.15,
-        position: Vec3::zeros(),
-    };
+    let ambient_light = 0.15;
 
     let camera = Camera::new(
         Vec3::new(0.0, 0.0, 10.0),

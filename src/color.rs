@@ -32,6 +32,13 @@ impl Color {
     }
 }
 
+impl PartialEq for Color {
+    fn eq(&self, other: &Self) -> bool {
+        to_hex_value(self) == to_hex_value(other)
+    }
+}
+impl Eq for Color {}
+
 /// Converts from a hex u32 into a `Color`.
 ///
 /// * `value`: The hex u32 to convert into a `Color`.

@@ -1,6 +1,6 @@
 use camera::Camera;
 use cube::Cube;
-use light::Light;
+use light::{AmbientLightIntensity, Light};
 use sphere::Sphere;
 use texture::GameTextures;
 
@@ -21,11 +21,21 @@ pub fn are_equal(first: f32, second: f32, eps: f32) -> bool {
     (first - second).abs() <= eps
 }
 
+/// Computes the minimum and maximum of two values.
+/// Returns: A tuple in the form of (min, max).
+pub fn minmax(a: f32, b: f32) -> (f32, f32) {
+    if a < b {
+        (a, b)
+    } else {
+        (b, a)
+    }
+}
+
 pub struct Model {
     pub spheres: Vec<Sphere>,
     pub cubes: Vec<Cube>,
     pub lights: Vec<Light>,
-    pub ambient_light: Light,
+    pub ambient_light: AmbientLightIntensity,
     pub camera: Camera,
     pub textures: GameTextures,
 }

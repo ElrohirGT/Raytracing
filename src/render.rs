@@ -1,10 +1,12 @@
+use std::fmt::Debug;
+
 use glm::Vec3;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
-use crate::light::Light;
+use crate::light::{AmbientLightIntensity, Light};
 use crate::texture::GameTextures;
-use crate::Model;
 use crate::{color::Color, framebuffer::Framebuffer};
+use crate::{minmax, Model};
 
 use crate::raytracer::{Intersect, Traceable};
 
@@ -50,11 +52,16 @@ fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
 
     for object in objects {
         let shadow_intersect = object.ray_intersect(&shadow_ray_origin, &light_dir);
-        if let Some(object_position) = shadow_intersect {
+        if let Some(object_intersection) = shadow_intersect {
+            if object_intersection.distance < 0.0 {
+                break;
+            }
+
             let distance_to_light = nalgebra_glm::distance2(&light.position, &intersect.point);
             let distance_from_object_to_light =
-                nalgebra_glm::distance2(&light.position, &object_position.point);
+                nalgebra_glm::distance2(&light.position, &object_intersection.point);
             shadow_intensity = distance_from_object_to_light / distance_to_light;
+
             break;
         }
     }
@@ -62,12 +69,13 @@ fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
     shadow_intensity
 }
 
-pub fn cast_ray<T: Traceable + Eq>(
+const TARGET_COLOR: u32 = 0x334b1d;
+pub fn cast_ray<T: Traceable + Eq + Debug>(
     ray_origin: &Vec3,
     ray_direction: &Vec3,
     objects: &[T],
     lights: &[Light],
-    ambient_light: &Light,
+    ambient_light: AmbientLightIntensity,
     textures: &GameTextures,
     depth: u32,
 ) -> Color {
@@ -105,10 +113,16 @@ pub fn cast_ray<T: Traceable + Eq>(
                     objects.iter().filter(|o| o != &impact_object),
                 );
                 let light_intensity = current_light.intensity * (1.0 - shadow_intensity);
+                // if light_intensity < 0.0 {
+                //     println!(
+                //         "The light is negative! {} * (1.0 - {})",
+                //         current_light.intensity, shadow_intensity
+                //     )
+                // }
 
                 let diffuse_intensity =
-                    intersect.normal.dot(&light_dir).clamp(0.0, 1.0) + ambient_light.intensity;
-                let diffuse = match intersect.material.texture {
+                    intersect.normal.dot(&light_dir).clamp(0.0, 1.0) + ambient_light;
+                let tx_color = match intersect.material.texture {
                     Some(tx_type) => {
                         let texture = textures.get_texture(&tx_type);
                         texture.get_color_of_face(
@@ -120,7 +134,13 @@ pub fn cast_ray<T: Traceable + Eq>(
                     None => intersect.material.diffuse,
                 };
                 let diffuse =
-                    diffuse * intersect.material.albedo.0 * diffuse_intensity * light_intensity;
+                    tx_color * intersect.material.albedo.0 * diffuse_intensity * light_intensity;
+                if diffuse == TARGET_COLOR.into() {
+                    println!(
+                        "Diffuse is black!\n{:?} * {} * {} * {}",
+                        tx_color, intersect.material.albedo.0, diffuse_intensity, light_intensity
+                    )
+                }
 
                 let specular_intensity = view_dir
                     .dot(&reflect_dir)
@@ -136,7 +156,7 @@ pub fn cast_ray<T: Traceable + Eq>(
                 if reflectivity > 0.0 {
                     let reflect_dir = reflect(&-ray_direction, &intersect.normal).normalize();
                     // Tenemos que hacer offset para evitar el acné
-                    let reflect_origin = intersect.point + 0.1 * intersect.normal;
+                    let reflect_origin = intersect.point + 1e-2 * intersect.normal;
                     reflect_color = cast_ray(
                         &reflect_origin,
                         &reflect_dir,
@@ -157,7 +177,7 @@ pub fn cast_ray<T: Traceable + Eq>(
                         intersect.material.refractive_index,
                     );
                     // Tenemos que hacer offset para evitar el acné
-                    let refract_origin = intersect.point + 0.2 * intersect.normal;
+                    let refract_origin = intersect.point + 1e-2 * intersect.normal;
 
                     refract_color = cast_ray(
                         &refract_origin,
@@ -170,10 +190,37 @@ pub fn cast_ray<T: Traceable + Eq>(
                     );
                 }
 
-                accumulator_color
+                let color = accumulator_color
                     + (diffuse + specular) * (1.0 - reflectivity - transparency)
                     + (reflect_color * reflectivity)
-                    + (refract_color * transparency)
+                    + (refract_color * transparency);
+
+                if color == TARGET_COLOR.into() {
+                    println!(
+                        r#"Found target color! {color:?}
+DIFFUSE:
+intensity: {diffuse_intensity}
+light_intensity: {light_intensity}
+
+REFLECT:
+reflectivity: {reflectivity}
+
+REFRACT:
+transparency: {transparency}
+
+accum: {accumulator_color:?}
++ ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
++ ({reflect_color:?} * {reflectivity})
++ ({refract_color:?} * {transparency})
+
+Intersect: {intersect:#?}
+ImpactObject: {impact_object:#?}
+CurrentLight: {current_light:#?}
+"#
+                    );
+                }
+
+                color
             })
     } else {
         // Sky color...
@@ -209,7 +256,7 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                     &rotated_direction,
                     &data.cubes,
                     &data.lights,
-                    &data.ambient_light,
+                    data.ambient_light,
                     &data.textures,
                     0,
                 )
