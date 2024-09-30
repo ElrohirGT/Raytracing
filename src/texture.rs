@@ -149,8 +149,8 @@ impl Texture {
         let x = point.x.clamp(origin.x, origin.x + sprite_size - 1.0) as u32;
         let y = point.y.clamp(origin.y, origin.y + sprite_size - 1.0) as u32;
 
-        let color = self.get_pixel_color(x, y);
+        
 
-        color
+        self.get_pixel_color(x, y)
     }
 }

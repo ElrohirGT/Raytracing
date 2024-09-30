@@ -1,7 +1,7 @@
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use mouse_rs::Mouse;
 use nalgebra_glm::Vec3;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use rayon::iter::ParallelIterator;
 use raytracer::camera::Camera;
 use raytracer::color::Color;
 use raytracer::cube::Cube;
@@ -9,7 +9,6 @@ use raytracer::framebuffer;
 use raytracer::light::Light;
 use raytracer::raytracer::Material;
 use raytracer::render::{init_render, render};
-use raytracer::sphere::Sphere;
 use raytracer::texture::{GameTextures, Textures};
 use raytracer::{Message, Model};
 use std::collections::VecDeque;
@@ -37,7 +36,7 @@ fn main() {
 
     let title_prefix = "TortrixCraft RTX - ON";
     let mut window =
-        Window::new(&title_prefix, window_width, window_height, window_options).unwrap();
+        Window::new(title_prefix, window_width, window_height, window_options).unwrap();
     window.set_key_repeat_delay(0.01);
     window.set_cursor_visibility(true);
     let mouse = Mouse::new();
@@ -66,7 +65,7 @@ fn main() {
             break;
         }
 
-        let mut messages: Vec<Message> = window
+        let messages: Vec<Message> = window
             .get_keys_pressed(KeyRepeat::Yes)
             .into_iter()
             .filter_map(|key| match key {
