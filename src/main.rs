@@ -108,7 +108,6 @@ fn main() {
         window
             .update_with_buffer(&framebuffer.buffer, framebuffer_width, framebuffer_height)
             .expect("Couldn't update the framebuffer!");
-
         let end = Instant::now();
         if last_recorded_frames.len() == last_recorded_frames_max_count {
             last_recorded_frames.pop_front();
@@ -170,18 +169,25 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     let cubes = vec![Cube::new(
         1,
         Vec3::new(0.0, 0.0, 0.0),
-        2.0,
+        2.5,
         rubber,
         Vec3::new(0.0, 0.0, 1.0).normalize(),
     )];
 
     println!("Cubes created: {:#?}", cubes);
 
-    let lights = vec![Light {
-        position: Vec3::new(2.0, 5.0, 2.0),
-        color: Color::white(),
-        intensity: 1.0,
-    }];
+    let lights = vec![
+        Light {
+            position: Vec3::new(2.0, 5.0, 2.0),
+            color: Color::white(),
+            intensity: 2.0,
+        },
+        Light {
+            position: Vec3::new(-2.0, -5.0, -2.0),
+            color: Color::white(),
+            intensity: 2.0,
+        },
+    ];
 
     let camera = Camera::new(
         Vec3::new(0.0, 0.0, 5.0),

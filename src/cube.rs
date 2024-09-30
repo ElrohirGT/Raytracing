@@ -145,29 +145,50 @@ impl Traceable for Cube {
 
         let mut normal = Vec3::zeros();
         let mut face = CubeFace::NONE;
-        let texture_cords = Vec2::new(
-            (point.x - cube_bounds.min.x) / self.size,
-            (point.y - cube_bounds.min.y) / self.size,
-        );
+        let mut texture_cords = Vec2::zeros();
 
         if (point.x - cube_bounds.min.x).abs() < 1e-5 {
             normal = Vec3::new(-1.0, 0.0, 0.0);
             face = CubeFace::LEFT;
+            texture_cords = Vec2::new(
+                (point.y - cube_bounds.min.y) / self.size,
+                (point.z - cube_bounds.min.z) / self.size,
+            );
         } else if (point.x - cube_bounds.max.x).abs() < 1e-5 {
             normal = Vec3::new(1.0, 0.0, 0.0);
             face = CubeFace::RIGHT;
+            texture_cords = Vec2::new(
+                (point.y - cube_bounds.min.y) / self.size,
+                (point.z - cube_bounds.min.z) / self.size,
+            );
         } else if (point.y - cube_bounds.min.y).abs() < 1e-5 {
             normal = Vec3::new(0.0, -1.0, 0.0);
             face = CubeFace::BOTTOM;
+            texture_cords = Vec2::new(
+                (point.x - cube_bounds.min.x) / self.size,
+                (point.z - cube_bounds.min.z) / self.size,
+            );
         } else if (point.y - cube_bounds.max.y).abs() < 1e-5 {
             normal = Vec3::new(0.0, 1.0, 0.0);
             face = CubeFace::TOP;
+            texture_cords = Vec2::new(
+                (point.x - cube_bounds.min.x) / self.size,
+                (point.z - cube_bounds.min.z) / self.size,
+            );
         } else if (point.z - cube_bounds.min.z).abs() < 1e-5 {
             normal = Vec3::new(0.0, 0.0, -1.0);
             face = CubeFace::BACKWARDS;
+            texture_cords = Vec2::new(
+                (point.x - cube_bounds.min.x) / self.size,
+                (point.y - cube_bounds.min.y) / self.size,
+            );
         } else if (point.z - cube_bounds.max.z).abs() < 1e-5 {
             normal = Vec3::new(0.0, 0.0, 1.0);
             face = CubeFace::FORWARDS;
+            texture_cords = Vec2::new(
+                (point.x - cube_bounds.min.x) / self.size,
+                (point.y - cube_bounds.min.y) / self.size,
+            );
         }
 
         let intersect = Intersect {

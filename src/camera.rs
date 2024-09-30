@@ -27,7 +27,7 @@ impl Camera {
             eye,
             center,
             up,
-            has_changed: false,
+            has_changed: true,
         }
     }
     pub fn change_basis(&self, vector: &Vec3) -> Vec3 {

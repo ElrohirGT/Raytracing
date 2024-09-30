@@ -31,6 +31,7 @@ pub enum Textures {
 impl GameTextures {
     pub fn new(asset_dir: &str) -> Self {
         let dirt = format!("{}{}", asset_dir, "dirt.png");
+        let dirt = format!("{}{}", asset_dir, "dirTesting.png");
 
         let dirt = Texture::new(&dirt, 16);
         // let vertical_wall = Texture::new(&vertical_wall);
@@ -146,6 +147,18 @@ impl Texture {
         };
 
         let point = origin + point;
-        self.get_pixel_color(point.x as u32, point.y as u32)
+        let x = point.x.clamp(origin.x, origin.x + sprite_size - 1.0) as u32;
+        let y = point.y.clamp(origin.y, origin.y + sprite_size - 1.0) as u32;
+
+        let color = self.get_pixel_color(x, y);
+
+        if let CubeFace::TOP = face {
+            println!(
+                "Coloring {:?} with: {:?} because of point: {:?}",
+                face, color, point
+            );
+        }
+
+        color
     }
 }
