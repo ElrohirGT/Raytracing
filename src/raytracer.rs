@@ -1,9 +1,8 @@
 use glm::{Vec2, Vec3};
 
 use crate::{
-    color::Color,
     material::Material,
-    texture::{CubeFace, Textures},
+    texture::CubeFace,
 };
 
 #[derive(Debug)]

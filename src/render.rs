@@ -6,7 +6,7 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use crate::light::{AmbientLightIntensity, Light};
 use crate::texture::GameTextures;
 use crate::{color::Color, framebuffer::Framebuffer};
-use crate::{minmax, Model};
+use crate::Model;
 
 use crate::raytracer::{Intersect, Traceable};
 
@@ -189,10 +189,7 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                     );
                 }
 
-                let color = accumulator_color
-                    + (diffuse + specular) * (1.0 - reflectivity - transparency)
-                    + (reflect_color * reflectivity)
-                    + (refract_color * transparency);
+                
 
                 // if color == TARGET_COLOR.into() {
                 //     println!();
@@ -220,7 +217,10 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                 //     );
                 // }
 
-                color
+                accumulator_color
+                    + (diffuse + specular) * (1.0 - reflectivity - transparency)
+                    + (reflect_color * reflectivity)
+                    + (refract_color * transparency)
             })
     } else {
         // Sky color...

@@ -8,12 +8,12 @@ use raytracer::color::Color;
 use raytracer::cube::Cube;
 use raytracer::light::Light;
 use raytracer::material::{
-    Material, GOLD, MAGMA, NETHERRACK, OBSIDIAN, PORTAL, RUBBER, STONE, WATER,
+    Material, GOLD, MAGMA, NETHERRACK, OBSIDIAN, PORTAL, STONE,
 };
 use raytracer::render::{init_render, render};
 use raytracer::sphere::Sphere;
-use raytracer::texture::{GameTextures, Textures};
-use raytracer::{framebuffer, material};
+use raytracer::texture::GameTextures;
+use raytracer::framebuffer;
 use raytracer::{Message, Model};
 use std::collections::VecDeque;
 use std::env;
@@ -161,7 +161,7 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     object_id += (cubes.len() + 1) as u32;
     cubes.append(&mut obsidian_frame);
 
-    let (mut portal_cubes, mut portal_lights, mut spheres) = generate_portal_wall(
+    let (mut portal_cubes, mut portal_lights, spheres) = generate_portal_wall(
         object_id,
         Vec2::new(-1.0, 0.0) * cube_size,
         Vec2::new(1.0, 3.0) * cube_size,
@@ -335,7 +335,7 @@ fn generate_rectangle(
                 object_id += 1;
 
                 Cube::new(
-                    id as u32,
+                    id,
                     Vec3::new(xpos + start.x, ypos, z),
                     cube_size,
                     material.clone(),
@@ -354,7 +354,7 @@ fn generate_rectangle(
                 object_id += 1;
 
                 Cube::new(
-                    id as u32,
+                    id,
                     Vec3::new(xpos, ypos + start.y, z),
                     cube_size,
                     material.clone(),
