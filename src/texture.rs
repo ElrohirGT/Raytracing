@@ -28,6 +28,7 @@ pub struct GameTextures {
     pub portal: Texture,
     pub netherrack: Texture,
     pub magma: Texture,
+    pub gold: Texture,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -40,6 +41,7 @@ pub enum Textures {
     PORTAL,
     NETHERRACK,
     MAGMA,
+    GOLD,
 }
 
 impl GameTextures {
@@ -52,6 +54,7 @@ impl GameTextures {
         let portal = format!("{asset_dir}portal.png");
         let netherrack = format!("{asset_dir}netherrack.png");
         let magma = format!("{asset_dir}magma.png");
+        let gold = format!("{asset_dir}gold.png");
 
         let dirt = Texture::new(&dirt, 16);
         let stone = Texture::new(&stone, 16);
@@ -61,6 +64,7 @@ impl GameTextures {
         let portal = Texture::new(&portal, 16);
         let netherrack = Texture::new(&netherrack, 16);
         let magma = Texture::new(&magma, 16);
+        let gold = Texture::new(&gold, 16);
 
         GameTextures {
             dirt,
@@ -71,6 +75,7 @@ impl GameTextures {
             portal,
             netherrack,
             magma,
+            gold,
         }
     }
 
@@ -84,6 +89,7 @@ impl GameTextures {
             Textures::PORTAL => &self.portal,
             Textures::NETHERRACK => &self.netherrack,
             Textures::MAGMA => &self.magma,
+            Textures::GOLD => &self.gold,
         }
     }
 }

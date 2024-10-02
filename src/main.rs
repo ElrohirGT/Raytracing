@@ -1,13 +1,17 @@
 use minifb::{Key, KeyRepeat, Window, WindowOptions};
 use mouse_rs::Mouse;
 use nalgebra_glm::{Vec2, Vec3};
+use rand::{thread_rng, Rng};
 use rayon::iter::ParallelIterator;
 use raytracer::camera::Camera;
 use raytracer::color::Color;
 use raytracer::cube::Cube;
 use raytracer::light::Light;
-use raytracer::material::{Material, MAGMA, NETHERRACK, OBSIDIAN, PORTAL, STONE, WATER};
+use raytracer::material::{
+    Material, GOLD, MAGMA, NETHERRACK, OBSIDIAN, PORTAL, RUBBER, STONE, WATER,
+};
 use raytracer::render::{init_render, render};
+use raytracer::sphere::Sphere;
 use raytracer::texture::{GameTextures, Textures};
 use raytracer::{framebuffer, material};
 use raytracer::{Message, Model};
@@ -130,32 +134,11 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
     let asset_dir = args.next().expect("No asset directory received!");
     println!("Reading assets from: {asset_dir}");
 
-    // let rubber = Material {
-    //     diffuse: 0xffff00.into(),
-    //     specular: 1.0,
-    //     albedo: (0.9, 0.1),
-    //     reflectivity: 0.0,
-    //     transparency: 0.0,
-    //     refractive_index: 1.51,
-    //     texture: Some(Textures::DIRT),
-    // };
-
-    // let ivory = Material {
-    //     diffuse: 0xff00ff.into(),
-    //     specular: 50.0,
-    //     albedo: (0.7, 0.3),
-    //     reflectivity: 0.5,
-    //     transparency: 0.1,
-    //     refractive_index: 1.0,
-    //     texture: None,
-    // };
-
-    let spheres = vec![];
-
-    let object_id = 0;
+    let mut object_id = 0;
     let p_width_height = 8;
     let cube_size = 1.5;
     let gap = 0.0;
+    // let mut cubes = vec![];
 
     let mut cubes = generate_platform(
         object_id,
@@ -163,48 +146,85 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         p_width_height,
         gap,
         cube_size,
-        NETHERRACK,
     );
-    let object_id = cubes.len() + 1;
+    object_id += (cubes.len() + 1) as u32;
 
     let delta = Vec2::new(-1.0, 0.0) * cube_size;
     let mut obsidian_frame = generate_rectangle(
         object_id,
-        Vec2::new(-2.0, 0.0) + delta,
-        Vec2::new(2.0, 5.0) + delta,
+        Vec2::new(-1.0, 0.0) * cube_size + delta,
+        Vec2::new(2.0, 4.0) * cube_size + delta,
         -3.0 * cube_size,
         cube_size,
         OBSIDIAN,
     );
-    let object_id = cubes.len() + 1;
+    object_id += (cubes.len() + 1) as u32;
     cubes.append(&mut obsidian_frame);
 
-    let (mut portal_cubes, mut portal_lights) = generate_wall(
+    let (mut portal_cubes, mut portal_lights, mut spheres) = generate_portal_wall(
         object_id,
-        Vec2::new(-2.0, 0.0),
-        Vec2::new(1.0, 4.0),
+        Vec2::new(-1.0, 0.0) * cube_size,
+        Vec2::new(1.0, 3.0) * cube_size,
         -3.0 * cube_size,
         cube_size,
         PORTAL,
     );
-    let object_id = cubes.len() + 1;
+    object_id += (cubes.len() + 1) as u32;
+    object_id += (spheres.len() + 1) as u32;
     cubes.append(&mut portal_cubes);
 
+    cubes.push(Cube::new(
+        object_id,
+        Vec3::new(0.0, 0.0, -0.0) * cube_size,
+        cube_size,
+        GOLD,
+        Vec3::new(0.0, 1.0, 0.0).normalize(),
+    ));
+
+    cubes.push(Cube::new(
+        object_id,
+        Vec3::new(0.0, 0.0, -1.0) * cube_size,
+        cube_size,
+        MAGMA,
+        Vec3::new(0.0, 1.0, 0.0).normalize(),
+    ));
+    cubes.push(Cube::new(
+        object_id,
+        Vec3::new(-1.0, 0.0, -1.0) * cube_size,
+        cube_size,
+        MAGMA,
+        Vec3::new(0.0, 1.0, 0.0).normalize(),
+    ));
+    cubes.push(Cube::new(
+        object_id,
+        Vec3::new(-1.0, 0.0, -1.0) * cube_size,
+        cube_size,
+        MAGMA,
+        Vec3::new(0.0, 1.0, 0.0).normalize(),
+    ));
+    cubes.push(Cube::new(
+        object_id,
+        Vec3::new(1.0, 0.0, 1.0) * cube_size,
+        cube_size,
+        STONE,
+        Vec3::new(0.0, 1.0, 0.0).normalize(),
+    ));
+
     // let mut water_cubes = generate_platform(
-    //     object_id as u32,
-    //     Vec3::new(0.0, -cube_size * 2.0, 0.0),
+    //     object_id,
+    //     Vec3::new(0.0, cube_size * 2.0, 0.0),
     //     2,
     //     gap,
     //     cube_size,
     //     WATER,
     // );
+    // object_id += (cubes.len() + 1) as u32;
     // cubes.append(&mut water_cubes);
-    // let object_id = cubes.len() + 1;
 
     println!("Cubes created: {cubes:#?}");
 
     portal_lights.append(&mut vec![Light {
-        position: Vec3::new(0.0, 2.0, 0.0),
+        position: Vec3::new(0.0, 20.0, 0.0),
         color: Color::white(),
         intensity: 1.0,
     }]);
@@ -259,20 +279,29 @@ fn generate_platform(
     size: u16,
     gap: f32,
     cube_size: f32,
-    material: Material,
 ) -> Vec<Cube> {
     let mut object_id = id_count;
     let half_size: i32 = (size / 2) as i32;
     (-half_size..half_size)
         .map(|z| z as f32 * (cube_size + gap))
         .flat_map(|z| {
-            let material = material.clone();
             (-half_size..half_size)
                 .map(|x| x as f32 * (cube_size + gap))
                 .map(move |x| {
                     let id = object_id;
                     object_id += 1;
 
+                    let mut rng = thread_rng();
+                    let rn: f32 = rng.gen();
+                    let material = if rn < 0.6 {
+                        NETHERRACK
+                    } else if rn < 0.8 {
+                        STONE
+                    } else if rn < 0.95 {
+                        MAGMA
+                    } else {
+                        GOLD
+                    };
                     Cube::new(
                         id,
                         Vec3::new(x, 0.0, z) + center,
@@ -286,7 +315,7 @@ fn generate_platform(
 }
 
 fn generate_rectangle(
-    id_count: usize,
+    id_count: u32,
     start: Vec2,
     end: Vec2,
     z: f32,
@@ -316,7 +345,7 @@ fn generate_rectangle(
     });
     // let top_and_bottom = vec![].into_iter();
 
-    let sides = vec![start.x, end.x + 0.5].into_iter().flat_map(|xpos| {
+    let sides = vec![start.x, end.x].into_iter().flat_map(|xpos| {
         let material = material.clone();
         (1..(endy - 1))
             .map(|ypos| ypos as f32 * cube_size)
@@ -338,14 +367,14 @@ fn generate_rectangle(
     top_and_bottom.chain(sides).collect()
 }
 
-fn generate_wall(
-    id_count: usize,
+fn generate_portal_wall(
+    id_count: u32,
     start: Vec2,
     end: Vec2,
     z: f32,
     cube_size: f32,
     material: Material,
-) -> (Vec<Cube>, Vec<Light>) {
+) -> (Vec<Cube>, Vec<Light>, Vec<Sphere>) {
     let mut object_id = id_count;
     let endx = (end.x - start.x) as i32;
     let endy = (end.y - start.y) as i32;
@@ -361,7 +390,7 @@ fn generate_wall(
                     object_id += 1;
 
                     Cube::new(
-                        id as u32,
+                        id,
                         Vec3::new(xpos + start.x, ypos, z),
                         cube_size,
                         material.clone(),
@@ -370,11 +399,22 @@ fn generate_wall(
                 })
         })
         .collect();
+
+    let light_position = Vec3::new((end.x + start.x) / 2.0, (end.y + start.y) / 2.0, z + 1.0);
     let light_sources = vec![Light {
-        position: Vec3::new((end.x + start.x) / 2.0, (end.y - start.y) / 2.0, z - 1.0),
+        position: light_position,
         color: 0x361B6F.into(),
-        intensity: 0.2,
+        intensity: 0.25,
     }];
 
-    (cubes, light_sources)
+    // let spheres = vec![Sphere {
+    //     id: id_count,
+    //     center: light_position,
+    //     radius: 0.2,
+    //     material: RUBBER,
+    // }];
+
+    let spheres = vec![];
+
+    (cubes, light_sources, spheres)
 }

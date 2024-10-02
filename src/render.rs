@@ -79,9 +79,8 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
     textures: &GameTextures,
     depth: u32,
 ) -> Color {
-    let skybox_color = 0x87CEEB.into();
     if depth > 3 {
-        return skybox_color;
+        return SKY_COLOR;
     }
 
     let (intersect, _, impact_object) = objects
@@ -225,9 +224,11 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
             })
     } else {
         // Sky color...
-        skybox_color
+        SKY_COLOR
     }
 }
+
+pub const SKY_COLOR: Color = Color::new(0x87, 0xCE, 0xEB);
 
 pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
     framebuffer.clear();
@@ -236,7 +237,36 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
     let height = framebuffer.height as f32;
     let aspect_ratio = width / height;
 
-    let pixel_colors: Vec<Color> = (0..framebuffer.height)
+    let sphere_colors: Vec<Color> = (0..framebuffer.height)
+        .into_par_iter()
+        .flat_map(|y| {
+            (0..framebuffer.width).into_par_iter().map(move |x| {
+                // Map the pixel coordinate to screen space [-1, 1]
+                let screen_x = (2.0 * x as f32) / width - 1.0;
+                let screen_y = -(2.0 * y as f32) / height + 1.0;
+
+                // Adjust for aspect ratio
+                let screen_x = screen_x * aspect_ratio;
+
+                // Calculate the direction of the ray for this pixel
+                let ray_direction = Vec3::new(screen_x, screen_y, -1.0).normalize();
+
+                // Cast the ray and get the pixel color
+                let rotated_direction = data.camera.change_basis(&ray_direction);
+                cast_ray(
+                    &data.camera.eye,
+                    &rotated_direction,
+                    &data.spheres,
+                    &data.lights,
+                    1.0,
+                    &data.textures,
+                    0,
+                )
+            })
+        })
+        .collect();
+
+    let cube_colors: Vec<Color> = (0..framebuffer.height)
         .into_par_iter()
         .flat_map(|y| {
             (0..framebuffer.width).into_par_iter().map(move |x| {
@@ -263,6 +293,12 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                 )
             })
         })
+        .collect();
+
+    let pixel_colors: Vec<Color> = cube_colors
+        .into_iter()
+        .zip(sphere_colors)
+        .map(|(c, s)| if s == SKY_COLOR { c } else { s })
         .collect();
 
     for (i, color) in pixel_colors.into_iter().enumerate() {

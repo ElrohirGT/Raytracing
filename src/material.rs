@@ -100,3 +100,23 @@ pub const MAGMA: Material = Material {
     refractive_index: 1.2,
     texture: Some(Textures::MAGMA),
 };
+
+pub const GOLD: Material = Material {
+    diffuse: Color::pink(),
+    specular: 2.0,
+    albedo: (0.5, 0.5),
+    reflectivity: 0.1,
+    transparency: 0.0,
+    refractive_index: 1.2,
+    texture: Some(Textures::GOLD),
+};
+
+pub const RUBBER: Material = Material {
+    diffuse: Color::pink(),
+    specular: 1.0,
+    albedo: (0.9, 0.1),
+    reflectivity: 0.0,
+    transparency: 0.0,
+    refractive_index: 1.51,
+    texture: None,
+};
