@@ -73,7 +73,7 @@ pub const OBSIDIAN: Material = Material {
 
 pub const PORTAL: Material = Material {
     diffuse: Color::pink(),
-    specular: 1.0,
+    specular: 150.0,
     albedo: (0.95, 0.05),
     reflectivity: 0.0,
     transparency: 0.4,

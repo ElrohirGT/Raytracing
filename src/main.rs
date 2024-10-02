@@ -372,7 +372,7 @@ fn generate_wall(
         .collect();
     let light_sources = vec![Light {
         position: Vec3::new((end.x + start.x) / 2.0, (end.y - start.y) / 2.0, z - 1.0),
-        color: 0x7833AE.into(),
+        color: 0x361B6F.into(),
         intensity: 0.2,
     }];
 
