@@ -53,10 +53,50 @@ pub const STONE: Material = Material {
 
 pub const WATER: Material = Material {
     diffuse: Color::pink(),
-    specular: 1.0,
-    albedo: (0.4, 0.6),
-    reflectivity: 0.2,
+    specular: 100.0,
+    albedo: (0.8, 0.1),
+    reflectivity: 0.1,
     transparency: 0.9,
-    refractive_index: 1.33,
+    refractive_index: 1.25,
     texture: Some(Textures::WATER),
+};
+
+pub const OBSIDIAN: Material = Material {
+    diffuse: Color::pink(),
+    specular: 100.0,
+    albedo: (0.95, 0.05),
+    reflectivity: 0.0,
+    transparency: 0.0,
+    refractive_index: 1.25,
+    texture: Some(Textures::OBSIDIAN),
+};
+
+pub const PORTAL: Material = Material {
+    diffuse: Color::pink(),
+    specular: 1.0,
+    albedo: (0.95, 0.05),
+    reflectivity: 0.0,
+    transparency: 0.4,
+    refractive_index: 1.2,
+    texture: Some(Textures::PORTAL),
+};
+
+pub const NETHERRACK: Material = Material {
+    diffuse: Color::pink(),
+    specular: 100.0,
+    albedo: (0.95, 0.05),
+    reflectivity: 0.0,
+    transparency: 0.0,
+    refractive_index: 1.2,
+    texture: Some(Textures::NETHERRACK),
+};
+
+pub const MAGMA: Material = Material {
+    diffuse: Color::pink(),
+    specular: 1.0,
+    albedo: (0.95, 0.05),
+    reflectivity: 0.0,
+    transparency: 0.0,
+    refractive_index: 1.2,
+    texture: Some(Textures::MAGMA),
 };

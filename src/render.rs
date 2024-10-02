@@ -59,7 +59,8 @@ fn cast_shadow<'a, T: Traceable + 'a, ObIterable: Iterator<Item = &'a T>>(
 
             let distance_from_object_to_light =
                 nalgebra_glm::distance2(&light.position, &object_intersection.point);
-            shadow_intensity = object_intersection.distance / distance_from_object_to_light;
+            shadow_intensity = object_intersection.distance / distance_from_object_to_light
+                * (1.0 - object_intersection.material.transparency);
 
             break;
         }
@@ -79,7 +80,7 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
     depth: u32,
 ) -> Color {
     let skybox_color = 0x87CEEB.into();
-    if depth > 4 {
+    if depth > 3 {
         return skybox_color;
     }
 
@@ -176,7 +177,7 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                         intersect.material.refractive_index,
                     );
                     // Tenemos que hacer offset para evitar el acné
-                    let refract_origin = intersect.point + 1e-2 * intersect.normal;
+                    let refract_origin = intersect.point + 1e-3 * intersect.normal;
 
                     refract_color = cast_ray(
                         &refract_origin,
@@ -194,31 +195,31 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                     + (reflect_color * reflectivity)
                     + (refract_color * transparency);
 
-                if color == TARGET_COLOR.into() {
-                    println!();
-                    println!(
-                        r#"Found target color! {color:?}
-                DIFFUSE:
-                intensity: {diffuse_intensity}
-                light_intensity: {light_intensity}
-
-                REFLECT:
-                reflectivity: {reflectivity}
-
-                REFRACT:
-                transparency: {transparency}
-
-                accum: {accumulator_color:?}
-                + ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
-                + ({reflect_color:?} * {reflectivity})
-                + ({refract_color:?} * {transparency})
-
-                Intersect: {intersect:#?}
-                ImpactObject: {impact_object:#?}
-                CurrentLight: {current_light:#?}
-                "#
-                    );
-                }
+                // if color == TARGET_COLOR.into() {
+                //     println!();
+                //     println!(
+                //         r#"Found target color! {color:?}
+                // DIFFUSE:
+                // intensity: {diffuse_intensity}
+                // light_intensity: {light_intensity}
+                //
+                // REFLECT:
+                // reflectivity: {reflectivity}
+                //
+                // REFRACT:
+                // transparency: {transparency}
+                //
+                // accum: {accumulator_color:?}
+                // + ({diffuse:?} + {specular:?}) * (1.0 - {reflectivity} - {transparency})
+                // + ({reflect_color:?} * {reflectivity})
+                // + ({refract_color:?} * {transparency})
+                //
+                // Intersect: {intersect:#?}
+                // ImpactObject: {impact_object:#?}
+                // CurrentLight: {current_light:#?}
+                // "#
+                //     );
+                // }
 
                 color
             })

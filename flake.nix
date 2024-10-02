@@ -40,16 +40,19 @@
       function = {pkgs, ...}: {
         default = pkgs.mkShell {
           packages = [pkgs.imagemagick];
-          shellHook = ''
+          shellHook = let
+					magickConfig= "PNG32:";
+					# magickConfig= "-define colorspace:auto-grayscale=false";
+					in ''
 						genAsset() {
 							#    | $6 | 
 							# $1 | $2 | $3
 							#    | $4 | 
 							#    | $5 | 
-							magick "$1" -rotate 90 out_left.png
-							magick "$3" -rotate -90 out_right.png
-							magick -gravity Center out_left.png "$2" out_right.png +smush 0 "$4" "$5" -smush 0 -rotate 180 out1.png
-							magick -gravity Center out1.png "$6" -smush 0 -rotate 180 out.png
+							magick  "$1" -rotate 90 ${magickConfig}out_left.png
+							magick  "$3" -rotate -90 ${magickConfig}out_right.png
+							magick  -gravity Center out_left.png "$2" out_right.png +smush 0 "$4" "$5" -smush 0 -rotate 180 ${magickConfig}out1.png
+							magick  -gravity Center out1.png "$6" -smush 0 -rotate 180 ${magickConfig}out.png
 							rm out_left.png out_right.png out1.png
 							mv out.png "$7"
 						}

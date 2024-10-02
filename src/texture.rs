@@ -24,6 +24,10 @@ pub struct GameTextures {
     pub stone: Texture,
     pub moss: Texture,
     pub water: Texture,
+    pub obsidian: Texture,
+    pub portal: Texture,
+    pub netherrack: Texture,
+    pub magma: Texture,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -32,6 +36,10 @@ pub enum Textures {
     STONE,
     MOSS,
     WATER,
+    OBSIDIAN,
+    PORTAL,
+    NETHERRACK,
+    MAGMA,
 }
 
 impl GameTextures {
@@ -40,24 +48,29 @@ impl GameTextures {
         let stone = format!("{asset_dir}stone.png");
         let moss = format!("{asset_dir}moss.png");
         let water = format!("{asset_dir}water.png");
+        let obsidian = format!("{asset_dir}obsidian.png");
+        let portal = format!("{asset_dir}portal.png");
+        let netherrack = format!("{asset_dir}netherrack.png");
+        let magma = format!("{asset_dir}magma.png");
 
         let dirt = Texture::new(&dirt, 16);
         let stone = Texture::new(&stone, 16);
         let moss = Texture::new(&moss, 16);
         let water = Texture::new(&water, 16);
-        // let vertical_wall = Texture::new(&vertical_wall);
-        // let corner_wall = Texture::new(&corner_wall);
-        // let lolibunny = Texture::new(&lolibunny);
-        // let start_screen = Texture::new(&start_screen);
-        // let loose_screen = AnimatedTexture::new(&loose_screen);
-        // let win_screen = AnimatedTexture::new(&win_screen);
-        // let splash_screen = AnimatedTexture::new(&splash_screen);
+        let obsidian = Texture::new(&obsidian, 16);
+        let portal = Texture::new(&portal, 16);
+        let netherrack = Texture::new(&netherrack, 16);
+        let magma = Texture::new(&magma, 16);
 
         GameTextures {
             dirt,
             stone,
             moss,
             water,
+            obsidian,
+            portal,
+            netherrack,
+            magma,
         }
     }
 
@@ -67,6 +80,10 @@ impl GameTextures {
             Textures::STONE => &self.stone,
             Textures::MOSS => &self.moss,
             Textures::WATER => &self.water,
+            Textures::OBSIDIAN => &self.obsidian,
+            Textures::PORTAL => &self.portal,
+            Textures::NETHERRACK => &self.netherrack,
+            Textures::MAGMA => &self.magma,
         }
     }
 }
