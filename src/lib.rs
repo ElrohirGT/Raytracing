@@ -1,4 +1,5 @@
 use camera::Camera;
+use color::Color;
 use cube::Cube;
 use glm::Vec3;
 use light::{AmbientLightIntensity, Light};
@@ -33,6 +34,11 @@ pub fn minmax(a: f32, b: f32) -> (f32, f32) {
     }
 }
 
+pub enum TimeOfDay {
+    Day,
+    Night,
+}
+
 pub struct Model {
     pub spheres: Vec<Sphere>,
     pub cubes: Vec<Cube>,
@@ -40,10 +46,15 @@ pub struct Model {
     pub ambient_light: AmbientLightIntensity,
     pub camera: Camera,
     pub textures: GameTextures,
+    pub daytime: TimeOfDay,
+    pub sky_color: Color,
+    pub top_light: Light,
 }
 
 pub enum Message {
     RotateCamera(f32, f32),
     ZoomCamera(f32),
     MoveFocus(Vec3),
+    TimeToDay,
+    TimeToNight,
 }

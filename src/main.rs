@@ -7,13 +7,11 @@ use raytracer::camera::Camera;
 use raytracer::color::Color;
 use raytracer::cube::Cube;
 use raytracer::light::Light;
-use raytracer::material::{
-    Material, GOLD, MAGMA, NETHERRACK, OBSIDIAN, PORTAL, STONE,
-};
-use raytracer::render::{init_render, render};
+use raytracer::material::{Material, GOLD, MAGMA, NETHERRACK, OBSIDIAN, PORTAL, STONE};
+use raytracer::render::{init_render, render, DAY_COLOR, NIGHT_COLOR};
 use raytracer::sphere::Sphere;
 use raytracer::texture::GameTextures;
-use raytracer::framebuffer;
+use raytracer::{framebuffer, TimeOfDay};
 use raytracer::{Message, Model};
 use std::collections::VecDeque;
 use std::env;
@@ -60,6 +58,7 @@ fn main() {
     let last_recorded_frames_max_count = 60;
     let mut last_recorded_frames = VecDeque::with_capacity(last_recorded_frames_max_count);
     while window.is_open() {
+        let mut should_update = false;
         let start = Instant::now();
         mode_cooldown_timer = (mode_cooldown_timer - 1).max(0);
         splash_timer = (splash_timer + 1).min(splash_delay + 1);
@@ -80,6 +79,14 @@ fn main() {
 
                 Key::W => Some(Message::ZoomCamera(PLAYER_SPEED)),
                 Key::S => Some(Message::ZoomCamera(-PLAYER_SPEED)),
+
+                Key::Tab => {
+                    should_update = true;
+                    Some(match data.daytime {
+                        raytracer::TimeOfDay::Day => Message::TimeToNight,
+                        raytracer::TimeOfDay::Night => Message::TimeToDay,
+                    })
+                }
 
                 // Key::Space => match (mode_cooldown_timer, &data.status) {
                 //     (0, GameStatus::MainMenu) => {
@@ -103,7 +110,7 @@ fn main() {
             data = update(data, msg);
         }
 
-        if data.camera.has_changed() {
+        if data.camera.has_changed() || should_update {
             render(&mut framebuffer, &data);
         }
         data.camera.reset_change();
@@ -223,11 +230,11 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
 
     println!("Cubes created: {cubes:#?}");
 
-    portal_lights.append(&mut vec![Light {
+    let top_light = Light {
         position: Vec3::new(0.0, 20.0, 0.0),
         color: Color::white(),
         intensity: 1.0,
-    }]);
+    };
 
     let ambient_light = 0.15;
 
@@ -243,9 +250,12 @@ fn init(framebuffer_width: usize, framebuffer_height: usize) -> Model {
         spheres,
         cubes,
         camera,
+        top_light,
         lights: portal_lights,
         ambient_light,
         textures,
+        daytime: raytracer::TimeOfDay::Day,
+        sky_color: DAY_COLOR,
     }
 }
 
@@ -269,6 +279,38 @@ fn update(data: Model, msg: Message) -> Model {
             let Model { mut camera, .. } = data;
             camera.move_focus(delta_pos);
             Model { camera, ..data }
+        }
+        Message::TimeToDay => {
+            let daytime = TimeOfDay::Day;
+            let sky_color = DAY_COLOR;
+            let top_light = Light {
+                position: Vec3::new(0.0, 20.0, 0.0),
+                color: Color::white(),
+                intensity: 1.0,
+            };
+
+            Model {
+                daytime,
+                sky_color,
+                top_light,
+                ..data
+            }
+        }
+        Message::TimeToNight => {
+            let daytime = TimeOfDay::Night;
+            let sky_color = NIGHT_COLOR;
+            let top_light = Light {
+                position: Vec3::new(0.0, 20.0, 0.0),
+                color: Color::black(),
+                intensity: 0.5,
+            };
+
+            Model {
+                daytime,
+                sky_color,
+                top_light,
+                ..data
+            }
         }
     }
 }

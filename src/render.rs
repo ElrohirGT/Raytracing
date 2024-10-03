@@ -5,8 +5,8 @@ use rayon::iter::{IntoParallelIterator, ParallelIterator};
 
 use crate::light::{AmbientLightIntensity, Light};
 use crate::texture::GameTextures;
-use crate::{color::Color, framebuffer::Framebuffer};
 use crate::Model;
+use crate::{color::Color, framebuffer::Framebuffer};
 
 use crate::raytracer::{Intersect, Traceable};
 
@@ -77,10 +77,11 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
     lights: &[Light],
     ambient_light: AmbientLightIntensity,
     textures: &GameTextures,
+    sky_color: &Color,
     depth: u32,
 ) -> Color {
     if depth > 3 {
-        return SKY_COLOR;
+        return *sky_color;
     }
 
     let (intersect, _, impact_object) = objects
@@ -163,6 +164,7 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                         lights,
                         ambient_light,
                         textures,
+                        sky_color,
                         depth + 1,
                     )
                 }
@@ -185,11 +187,10 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                         lights,
                         ambient_light,
                         textures,
+                        sky_color,
                         depth + 1,
                     );
                 }
-
-                
 
                 // if color == TARGET_COLOR.into() {
                 //     println!();
@@ -223,12 +224,12 @@ pub fn cast_ray<T: Traceable + Eq + Debug>(
                     + (refract_color * transparency)
             })
     } else {
-        // Sky color...
-        SKY_COLOR
+        *sky_color
     }
 }
 
-pub const SKY_COLOR: Color = Color::new(0x87, 0xCE, 0xEB);
+pub const DAY_COLOR: Color = Color::new(0x87, 0xCE, 0xEB);
+pub const NIGHT_COLOR: Color = Color::new(0x03, 0x03, 0x05);
 
 pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
     framebuffer.clear();
@@ -236,6 +237,13 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
     let width = framebuffer.width as f32;
     let height = framebuffer.height as f32;
     let aspect_ratio = width / height;
+
+    let mut lights = Vec::with_capacity(data.lights.len());
+    lights.append(&mut data.lights.to_vec());
+    lights.push(data.top_light.clone());
+
+    let sphere_lights = &lights;
+    let cube_lights = &lights;
 
     let sphere_colors: Vec<Color> = (0..framebuffer.height)
         .into_par_iter()
@@ -257,9 +265,10 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                     &data.camera.eye,
                     &rotated_direction,
                     &data.spheres,
-                    &data.lights,
+                    sphere_lights,
                     1.0,
                     &data.textures,
+                    &data.sky_color,
                     0,
                 )
             })
@@ -286,9 +295,10 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
                     &data.camera.eye,
                     &rotated_direction,
                     &data.cubes,
-                    &data.lights,
+                    cube_lights,
                     data.ambient_light,
                     &data.textures,
+                    &data.sky_color,
                     0,
                 )
             })
@@ -298,7 +308,7 @@ pub fn render(framebuffer: &mut Framebuffer, data: &Model) {
     let pixel_colors: Vec<Color> = cube_colors
         .into_iter()
         .zip(sphere_colors)
-        .map(|(c, s)| if s == SKY_COLOR { c } else { s })
+        .map(|(c, s)| if s == data.sky_color { c } else { s })
         .collect();
 
     for (i, color) in pixel_colors.into_iter().enumerate() {
